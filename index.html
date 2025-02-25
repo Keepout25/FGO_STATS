@@ -9,23 +9,26 @@
     h1 { margin-bottom: 20px; }
     table.dataTable { table-layout: auto !important; width: auto !important; }
     table.dataTable td, table.dataTable th { white-space: nowrap; }
-    
-    /* 필터 버튼 컨테이너 스타일 */
-    .filter-btn-container {
-      display: inline-block;
+
+    /* 중앙 정렬된 필터 버튼 컨테이너 */
+    .filter-container {
       position: absolute;
-      top: 0;
-      left: 0;
-      background-color: white;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      top: 10px; /* 테이블 위에 위치 */
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
     }
-    
-    .filter-btn {
-      padding: 5px 10px;
-      cursor: pointer;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
+
+    /* 각 필터 버튼 크기 */
+    .filter-box {
+      background-color: rgba(255, 255, 255, 0.8);
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+      font-weight: bold;
     }
 
     .filter-popup {
@@ -68,56 +71,36 @@
       border-radius: 5px;
       cursor: pointer;
     }
-
-    .filter-popup .select-all, .filter-popup .deselect-all {
-      display: inline-block;
-      margin-top: 10px;
-      padding: 10px;
-      background-color: #28a745;
-      color: white;
-      text-align: center;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .filter-popup .deselect-all { background-color: #dc3545; }
   </style>
 </head>
 <body>
   <h1>FGO 서번트 데이터 검색</h1>
 
-  <!-- 필터 버튼 컨테이너 (크기 동적으로 조정됨) -->
-  <div class="filter-btn-container" id="filterContainer">
-    <button class="filter-btn" id="toggleFilter">속성 필터</button>
+  <!-- 필터 버튼을 중앙에 배치 -->
+  <div class="filter-container">
+    <div class="filter-box" id="filterStar">별</div>
+    <div class="filter-box" id="filterClass">클래스</div>
+    <div class="filter-box" id="filterName">서번트 이름</div>
+    <div class="filter-box" id="filterAttr">속성</div>
   </div>
 
   <table id="servantTable" class="display">
     <thead>
       <tr>
-        <th>별</th>
-        <th>클래스</th>
-        <th>서번트 이름</th>
-        <th id="attributeHeader">속성</th>
+        <th id="thStar">별</th>
+        <th id="thClass">클래스</th>
+        <th id="thName">서번트 이름</th>
+        <th id="thAttr">속성</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
-
-  <div class="filter-popup" id="attributeFilter">
-    <h3>속성 선택</h3>
-    <button class="select-all">모두 선택</button>
-    <button class="deselect-all">모두 해제</button>
-    <div id="filter-options"></div>
-    <button class="confirm-btn" id="confirmFilter">확인</button>
-  </div>
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.2/js/jquery.dataTables.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
   <script>
     $(document).ready(function() {
-      var selectedAttributes = [];
       var table;
 
       Papa.parse('Data/fgo_attributes.csv', {
@@ -128,12 +111,10 @@
           var fixedFields = ["star", "character_class", "character_name"];
           var attributeFields = fields.filter(field => field.toLowerCase().startsWith("attribute"));
           attributeFields.sort((a, b) => (parseInt(a.replace(/[^0-9]/g, "")) || 0) - (parseInt(b.replace(/[^0-9]/g, "")) || 0));
-          var attributeSet = new Set();
 
           var tbodyHTML = "";
           results.data.forEach(function(row) {
             var attrValues = attributeFields.map(field => (row[field] || "").trim()).filter(val => val !== "");
-            attrValues.forEach(val => attributeSet.add(val));
             var allAttrs = attrValues.join(" / ");
             tbodyHTML += `<tr>
               <td>${row.star || ""}</td>
@@ -155,62 +136,22 @@
               { title: "속성", orderable: false }
             ],
             drawCallback: function() {
-              updateFilterButtonSize();
+              updateFilterBoxSizes();
             }
           });
 
-          function updateFilterButtonSize() {
-            var thWidth = $("#attributeHeader").outerWidth();
-            $("#filterContainer").width(thWidth);
+          function updateFilterBoxSizes() {
+            $("#filterStar").width($("#thStar").outerWidth()).height($("#thStar").outerHeight());
+            $("#filterClass").width($("#thClass").outerWidth()).height($("#thClass").outerHeight());
+            $("#filterName").width($("#thName").outerWidth()).height($("#thName").outerHeight());
+            $("#filterAttr").width($("#thAttr").outerWidth()).height($("#thAttr").outerHeight());
           }
 
-          $(window).on("resize", updateFilterButtonSize);
-          updateFilterButtonSize(); // 초기 크기 설정
-
-          $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-            var attributesText = data[3]; // 속성 컬럼
-            if (selectedAttributes.length === 0) {
-              return true;
-            }
-            return selectedAttributes.every(attr => attributesText.includes(attr));
-          });
-
-          function createAttributeFilters() {
-            var container = $("#filter-options");
-            container.empty();
-            var sortedAttributes = Array.from(attributeSet).sort();
-            sortedAttributes.forEach(function(value) {
-              var btn = $(`<span class="toggle-btn" data-value="${value}">${value}</span>`)
-                .click(function() {
-                  $(this).toggleClass("active");
-                });
-              container.append(btn);
-            });
-          }
-
-          createAttributeFilters();
+          $(window).on("resize", updateFilterBoxSizes);
+          updateFilterBoxSizes(); // 초기 크기 설정
         }
       });
 
-      $("#toggleFilter").click(function(e) {
-        e.stopPropagation();
-        $("#attributeFilter").toggle();
-      });
-
-      $("#confirmFilter").click(function() {
-        selectedAttributes = $("#filter-options .toggle-btn.active").map((_, el) => $(el).data("value")).get();
-        console.log("선택한 속성:", selectedAttributes);
-        table.draw();
-        $("#attributeFilter").hide();
-      });
-
-      $(".select-all").click(function() {
-        $(".toggle-btn").addClass("active");
-      });
-
-      $(".deselect-all").click(function() {
-        $(".toggle-btn").removeClass("active");
-      });
     });
   </script>
 </body>
