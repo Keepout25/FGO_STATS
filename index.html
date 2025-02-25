@@ -5,30 +5,61 @@
   <title>FGO 서번트 데이터 검색</title>
   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.2/css/jquery.dataTables.css">
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    h1 { margin-bottom: 20px; }
-    table.dataTable { table-layout: auto !important; width: auto !important; }
-    table.dataTable td, table.dataTable th { white-space: nowrap; }
+    body { font-family: Arial, sans-serif; padding: 20px; margin-top: 80px; }
+    
+    /* 제목 고정 */
+    .header-title {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: white;
+      padding: 10px 0;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      z-index: 100;
+      border-bottom: 1px solid #ccc;
+    }
 
-    /* 중앙 정렬된 필터 버튼 컨테이너 */
+    table.dataTable {
+      table-layout: auto !important;
+      width: auto !important;
+    }
+
+    table.dataTable td, table.dataTable th {
+      white-space: nowrap;
+    }
+
+    /* 필터 버튼 컨테이너 */
     .filter-container {
-      position: absolute;
       display: flex;
       justify-content: center;
-      gap: 10px;
-      top: 10px; /* 테이블 위에 위치 */
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 100;
+      gap: 5px;
+      position: relative;
+      margin-bottom: 5px;
     }
 
     /* 각 필터 버튼 크기 */
     .filter-box {
-      background-color: rgba(255, 255, 255, 0.8);
+      background-color: rgba(255, 255, 255, 0.9);
       border: 1px solid #ccc;
-      padding: 10px;
+      padding: 5px;
       text-align: center;
       font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .filter-box button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 5px;
+      cursor: pointer;
+      margin-left: 5px;
     }
 
     .filter-popup {
@@ -74,14 +105,18 @@
   </style>
 </head>
 <body>
-  <h1>FGO 서번트 데이터 검색</h1>
 
-  <!-- 필터 버튼을 중앙에 배치 -->
+  <!-- 최상단 고정 제목 -->
+  <div class="header-title">FGO 서번트 데이터 검색</div>
+
+  <!-- 필터 버튼을 테이블 위에 배치 -->
   <div class="filter-container">
     <div class="filter-box" id="filterStar">별</div>
     <div class="filter-box" id="filterClass">클래스</div>
     <div class="filter-box" id="filterName">서번트 이름</div>
-    <div class="filter-box" id="filterAttr">속성</div>
+    <div class="filter-box" id="filterAttr">속성 
+      <button id="toggleFilter">필터</button>
+    </div>
   </div>
 
   <table id="servantTable" class="display">
@@ -95,6 +130,14 @@
     </thead>
     <tbody></tbody>
   </table>
+
+  <div class="filter-popup" id="attributeFilter">
+    <h3>속성 선택</h3>
+    <button class="select-all">모두 선택</button>
+    <button class="deselect-all">모두 해제</button>
+    <div id="filter-options"></div>
+    <button class="confirm-btn" id="confirmFilter">확인</button>
+  </div>
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.2/js/jquery.dataTables.js"></script>
@@ -148,10 +191,26 @@
           }
 
           $(window).on("resize", updateFilterBoxSizes);
-          updateFilterBoxSizes(); // 초기 크기 설정
+          updateFilterBoxSizes();
         }
       });
 
+      $("#toggleFilter").click(function(e) {
+        e.stopPropagation();
+        $("#attributeFilter").toggle();
+      });
+
+      $("#confirmFilter").click(function() {
+        $("#attributeFilter").hide();
+      });
+
+      $(".select-all").click(function() {
+        $(".toggle-btn").addClass("active");
+      });
+
+      $(".deselect-all").click(function() {
+        $(".toggle-btn").removeClass("active");
+      });
     });
   </script>
 </body>
