@@ -8,11 +8,20 @@
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
     h1 { margin-bottom: 20px; }
+    /* 테이블의 레이아웃을 auto로 설정하여 내용에 맞게 열 너비가 조절되도록 함 */
+    table.dataTable {
+      table-layout: auto !important;
+      width: auto !important;
+    }
+    /* 필요에 따라 각 셀의 공백을 없애고, nowrap 옵션을 적용할 수 있음 */
+    table.dataTable td {
+      white-space: nowrap;
+    }
   </style>
 </head>
 <body>
   <h1>FGO 서번트 데이터 검색</h1>
-  <!-- URL 열을 제거하고, 속성은 하나의 열로 합침 -->
+  <!-- URL 열은 제거하고, 속성은 하나의 열로 합침 -->
   <table id="servantTable" class="display">
     <thead>
       <tr>
@@ -56,9 +65,10 @@
           });
           $('#servantTable tbody').html(tbodyHTML);
           
-          // DataTables 초기화 – 페이징은 비활성화(모든 행을 한 페이지에 표시)
+          // DataTables 초기화 – 페이징 비활성화 및 autoWidth 옵션 활성화
           $('#servantTable').DataTable({
             paging: false,
+            autoWidth: true,
             language: { search: "검색:" },
             columns: [
               { title: "별" },
