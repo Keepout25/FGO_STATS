@@ -6,16 +6,16 @@
   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.2/css/jquery.dataTables.css">
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
-    h1 { margin-bottom: 20px; }
+    h1 { margin-bottom: 20px; text-align: center; }
     table.dataTable { table-layout: auto !important; width: auto !important; }
     table.dataTable td { white-space: nowrap; }
-    .filter-container { margin-bottom: 10px; }
+    .filter-container { margin-bottom: 10px; text-align: center; }
     .filter-btn { padding: 5px 10px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px; }
     .filter-popup {
       display: none;
       position: fixed;
       width: 600px;
-      height: 1200px;
+      height: 500px;
       background-color: white;
       border: 1px solid #ccc;
       padding: 10px;
@@ -23,8 +23,9 @@
       z-index: 1000;
       overflow-y: auto;
       resize: both;
-      right: 10px;
-      bottom: 10px;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
     }
     .filter-popup .toggle-btn {
       display: inline-block;
@@ -37,8 +38,8 @@
     }
     .filter-popup .toggle-btn.active { background-color: #007bff; color: white; }
     .filter-popup .confirm-btn {
-      display: block;
-      margin-top: 20px;
+      display: inline-block;
+      margin-top: 10px;
       padding: 10px;
       background-color: #007bff;
       color: white;
@@ -47,17 +48,32 @@
       border-radius: 5px;
       cursor: pointer;
     }
+    .filter-popup .select-all, .filter-popup .deselect-all {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #28a745;
+      color: white;
+      text-align: center;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .filter-popup .deselect-all { background-color: #dc3545; }
   </style>
 </head>
 <body>
   <h1>FGO 서번트 데이터 검색</h1>
-  
+
   <div class="filter-container">
+    <h3>서번트 속성 필터</h3>
     <button class="filter-btn" id="toggleFilter">속성 필터</button>
   </div>
   
   <div class="filter-popup" id="attributeFilter">
     <h3>속성 선택</h3>
+    <button class="select-all">모두 선택</button>
+    <button class="deselect-all">모두 해제</button>
     <div id="filter-options"></div>
     <button class="confirm-btn" id="confirmFilter">확인</button>
   </div>
@@ -118,7 +134,6 @@
             ]
           });
 
-          // 필터링 함수 추가
           $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
             var attributesText = data[3]; // 속성 컬럼
             if (selectedAttributes.length === 0) {
@@ -130,7 +145,8 @@
           function createAttributeFilters() {
             var container = $("#filter-options");
             container.empty();
-            attributeSet.forEach(function(value) {
+            var sortedAttributes = Array.from(attributeSet).sort(); // 속성 가나다순 정렬
+            sortedAttributes.forEach(function(value) {
               var btn = $(`<span class="toggle-btn" data-value="${value}">${value}</span>`)
                 .click(function() {
                   $(this).toggleClass("active");
@@ -143,18 +159,24 @@
         }
       });
 
-      // 속성 필터 토글 버튼
       $("#toggleFilter").click(function(e) {
         e.stopPropagation();
         $("#attributeFilter").toggle();
       });
 
-      // 확인 버튼 클릭 시 필터 적용 및 팝업 닫기
       $("#confirmFilter").click(function() {
         selectedAttributes = $("#filter-options .toggle-btn.active").map((_, el) => $(el).data("value")).get();
         console.log("선택한 속성:", selectedAttributes);
         table.draw();
-        $("#attributeFilter").hide();  // 팝업 닫기 추가
+        $("#attributeFilter").hide();
+      });
+
+      $(".select-all").click(function() {
+        $(".toggle-btn").addClass("active");
+      });
+
+      $(".deselect-all").click(function() {
+        $(".toggle-btn").removeClass("active");
       });
     });
   </script>
