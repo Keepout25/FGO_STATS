@@ -33,9 +33,26 @@
 
     /* 필터 버튼 스타일 */
     .filter-btn-container {
-      margin-bottom: 10px;
+           display: flex;
+      justify-content: center;
+      gap: 5px;
+      position: relative;
+      margin-bottom: 5px;
     }
 
+    /* 각 필터 버튼 크기 */
+    .filter-box {
+      background-color: rgba(255, 255, 255, 0.9);
+      border: 1px solid #ccc;
+      padding: 5px;
+      text-align: center;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
     .filter-btn {
       padding: 5px 10px;
       cursor: pointer;
