@@ -53,4 +53,48 @@
           });
           // attribute 필드를 숫자 순서대로 정렬 (예: attribute1, attribute2, …)
           attributeFields.sort(function(a, b) {
-            var
+            var numA = parseInt(a.replace(/[^0-9]/g, "")) || 0;
+            var numB = parseInt(b.replace(/[^0-9]/g, "")) || 0;
+            return numA - numB;
+          });
+
+          var tbodyHTML = "";
+          results.data.forEach(function(row) {
+            // 모든 attribute 필드의 값을 추출하여 하나의 문자열로 결합
+            var attrValues = attributeFields.map(function(field) {
+              return (row[field] || "").trim();
+            }).filter(function(val) {
+              return val !== "";
+            });
+            var allAttrs = attrValues.join(" / ");
+            
+            tbodyHTML += "<tr>";
+            tbodyHTML += "<td>" + (row.star || "") + "</td>";
+            tbodyHTML += "<td>" + (row.character_class || "") + "</td>";
+            tbodyHTML += "<td>" + (row.character_name || "") + "</td>";
+            tbodyHTML += "<td>" + allAttrs + "</td>";
+            tbodyHTML += "</tr>";
+          });
+          $("#servantTable tbody").html(tbodyHTML);
+          
+          // DataTables 초기화 – 모든 행을 한 페이지에 표시하고, 자동 너비 조절
+          $("#servantTable").DataTable({
+            paging: false,
+            autoWidth: true,
+            language: { search: "검색:" },
+            columns: [
+              { title: "별" },
+              { title: "클래스" },
+              { title: "서번트 이름" },
+              { title: "속성" }
+            ]
+          });
+        },
+        error: function(error) {
+          console.error("CSV 파싱 실패:", error);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
