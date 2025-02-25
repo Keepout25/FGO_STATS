@@ -9,7 +9,7 @@
     body { font-family: Arial, sans-serif; padding: 20px; }
     h1 { margin-bottom: 20px; }
     
-    /* 테이블 헤더 내 필터 버튼과 팝업 */
+    /* 헤더 내 필터 버튼과 팝업 스타일 */
     th { position: relative; }
     .filter-btn {
       margin-left: 5px;
@@ -56,7 +56,7 @@
 <body>
   <h1>FGO 서번트 데이터 검색 - 토글 필터</h1>
   
-  <!-- 테이블: 헤더에 각 열에 대한 필터 버튼과 팝업을 포함 -->
+  <!-- 테이블: 헤더에 필터 버튼과 팝업 포함 (서번트 이름은 필터 없음) -->
   <table id="servantTable" class="display">
     <thead>
       <tr>
@@ -72,7 +72,7 @@
         </th>
         <th>
           서번트 이름
-          <!-- 서번트 이름 토글은 없음 -->
+          <!-- 서번트 이름은 필터 없이 제목만 표시 -->
         </th>
         <th>
           속성
@@ -91,7 +91,7 @@
   
   <script>
     $(document).ready(function() {
-      // 필터 상태 객체 (별, 클래스, 속성)
+      // 필터 상태 객체: star, character_class, attribute만 관리 (서번트 이름 필터는 없음)
       var filterState = {
         star: [],
         character_class: [],
@@ -100,18 +100,16 @@
       
       var table;  // DataTables 객체
       
-      // CSV 파일 파싱
       Papa.parse('Data/fgo_attributes.csv', {
         download: true,
         header: true,
         complete: function(results) {
-          console.log("CSV 헤더:", results.meta.fields);
-          console.log("CSV 데이터:", results.data);
           var data = results.data;
-          // CSV 헤더 목록과 고정 필드 정의
           var fields = results.meta.fields;
+          // 고정 필드 정의
           var fixedFields = ["star", "character_class", "character_name"];
-          // "attribute"로 시작하는 모든 필드 추출 및 숫자 순 정렬
+          
+          // "attribute"로 시작하는 모든 필드를 추출 및 숫자 순 정렬
           var attributeFields = fields.filter(function(field) {
             return field.toLowerCase().startsWith("attribute");
           }).sort(function(a, b) {
@@ -120,27 +118,27 @@
             return numA - numB;
           });
           
-          // 고유값 수집: 별, 클래스, 그리고 attribute별 고유값(각 행의 attribute 필드 값을 분리하여)
+          // 고유값 수집 객체 (수집할 고정 필드 모두 포함)
           var distinct = {
             star: {},
             character_class: {},
+            character_name: {},
             attribute: {}
           };
           
-          // 테이블 본문 생성
           var tbodyHTML = "";
           data.forEach(function(row) {
-            // 고정 필드 고유값 수집
+            // 고정 필드의 고유값 수집
             fixedFields.forEach(function(field) {
               if (row[field] && row[field].trim() !== "") {
                 distinct[field][row[field].trim()] = true;
               }
             });
-            // attribute 필드의 값을 모두 결합하고, '/' 구분자로 분리하여 distinct 수집
+            // attribute 필드의 값을 결합 (빈 값은 제외)
             var attrValues = attributeFields.map(function(field) {
               return (row[field] || "").trim();
             }).filter(function(val) { return val !== ""; });
-            // attribute 필터를 위한 distinct 값 추가
+            // distinct의 attribute에 추가
             attrValues.forEach(function(val) {
               distinct.attribute[val] = true;
             });
@@ -168,17 +166,14 @@
             ]
           });
           
-          // DataTables 커스텀 필터 함수
+          // DataTables 커스텀 필터 함수 (토글 필터 조건 적용)
           $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
             var starVal = data[0];         // 별
             var classVal = data[1];        // 클래스
             var attributeVal = data[3];    // 속성 (결합된 문자열)
             
-            // 별 필터: 선택된 값이 있으면 해당 값과 일치해야 함
             if (filterState.star.length > 0 && filterState.star.indexOf(starVal) === -1) return false;
-            // 클래스 필터
             if (filterState.character_class.length > 0 && filterState.character_class.indexOf(classVal) === -1) return false;
-            // 속성 필터: 선택된 속성 중 하나라도 포함되어야 함
             if (filterState.attribute.length > 0) {
               var matched = false;
               filterState.attribute.forEach(function(val) {
@@ -189,7 +184,7 @@
             return true;
           });
           
-          // 토글 버튼 생성 함수 (팝업에 추가)
+          // 토글 버튼 생성 함수 (팝업에 버튼 추가)
           function createToggleButtons(field, popupId) {
             var container = $("#" + popupId);
             container.empty();
@@ -201,7 +196,6 @@
                 .click(function(e) {
                   e.stopPropagation();  // 팝업 닫힘 방지
                   $(this).toggleClass("active");
-                  // 현재 해당 필드의 선택값 갱신
                   var selected = [];
                   $("#" + popupId + " .toggle-btn.active").each(function() {
                     selected.push($(this).attr("data-value"));
@@ -218,12 +212,11 @@
           createToggleButtons("character_class", "popup-character_class");
           createToggleButtons("attribute", "popup-attribute");
           
-          // 필터 버튼 클릭 시 팝업 토글 (같은 th 내에서)
+          // 필터 버튼 클릭 시 해당 팝업 토글 (다른 팝업은 닫음)
           $(".filter-btn").click(function(e) {
             e.stopPropagation();
             var filterKey = $(this).attr("data-filter");
             var popup = $("#popup-" + filterKey);
-            // 팝업 토글 (다른 팝업은 닫기)
             $(".filter-popup").not(popup).hide();
             popup.toggle();
           });
@@ -232,6 +225,8 @@
           $(document).click(function() {
             $(".filter-popup").hide();
           });
+          
+          table.draw();
         },
         error: function(error) {
           console.error("CSV 파싱 실패:", error);
