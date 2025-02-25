@@ -58,10 +58,18 @@
       cursor: pointer;
     }
     .filter-popup .deselect-all { background-color: #dc3545; }
+    /* 필터 버튼 스타일 */
+    .filter-btn-container { margin-bottom: 10px; }
+    .filter-btn { padding: 5px 10px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px; }
   </style>
 </head>
 <body>
   <h1>FGO 서번트 데이터 검색</h1>
+
+  <!-- 필터 버튼을 테이블 위에 추가 -->
+  <div class="filter-btn-container">
+    <button class="filter-btn" id="toggleFilter">속성 필터</button>
+  </div>
 
   <table id="servantTable" class="display">
     <thead>
@@ -69,10 +77,7 @@
         <th>별</th>
         <th>클래스</th>
         <th>서번트 이름</th>
-        <th>
-          속성
-          <button class="filter-btn" id="toggleFilter">속성 필터</button>
-        </th>
+        <th>속성</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -127,7 +132,14 @@
               { title: "클래스" },
               { title: "서번트 이름" },
               { title: "속성", orderable: false }
-            ]
+            ],
+            drawCallback: function() {
+              // 테이블이 새로 그려질 때 필터 버튼이 유지되도록 보장
+              if ($("#toggleFilter").length === 0) {
+                $(".filter-btn-container").html('<button class="filter-btn" id="toggleFilter">속성 필터</button>');
+                attachFilterEvents();
+              }
+            }
           });
 
           $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
@@ -155,25 +167,29 @@
         }
       });
 
-      $("#toggleFilter").click(function(e) {
-        e.stopPropagation();
-        $("#attributeFilter").toggle();
-      });
+      function attachFilterEvents() {
+        $("#toggleFilter").off("click").on("click", function(e) {
+          e.stopPropagation();
+          $("#attributeFilter").toggle();
+        });
 
-      $("#confirmFilter").click(function() {
-        selectedAttributes = $("#filter-options .toggle-btn.active").map((_, el) => $(el).data("value")).get();
-        console.log("선택한 속성:", selectedAttributes);
-        table.draw();
-        $("#attributeFilter").hide();
-      });
+        $("#confirmFilter").off("click").on("click", function() {
+          selectedAttributes = $("#filter-options .toggle-btn.active").map((_, el) => $(el).data("value")).get();
+          console.log("선택한 속성:", selectedAttributes);
+          table.draw();
+          $("#attributeFilter").hide();
+        });
 
-      $(".select-all").click(function() {
-        $(".toggle-btn").addClass("active");
-      });
+        $(".select-all").off("click").on("click", function() {
+          $(".toggle-btn").addClass("active");
+        });
 
-      $(".deselect-all").click(function() {
-        $(".toggle-btn").removeClass("active");
-      });
+        $(".deselect-all").off("click").on("click", function() {
+          $(".toggle-btn").removeClass("active");
+        });
+      }
+
+      attachFilterEvents();
     });
   </script>
 </body>
