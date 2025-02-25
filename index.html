@@ -31,36 +31,18 @@
       white-space: nowrap;
     }
 
-    /* 필터 버튼 컨테이너 */
-    .filter-container {
-      display: flex;
-      justify-content: center;
-      gap: 5px;
-      position: relative;
-      margin-bottom: 5px;
+    /* 필터 버튼 스타일 */
+    .filter-btn-container {
+      margin-bottom: 10px;
     }
 
-    /* 각 필터 버튼 크기 */
-    .filter-box {
-      background-color: rgba(255, 255, 255, 0.9);
-      border: 1px solid #ccc;
-      padding: 5px;
-      text-align: center;
-      font-weight: bold;
+    .filter-btn {
+      padding: 5px 10px;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
-
-    .filter-box button {
       background-color: #007bff;
       color: white;
       border: none;
-      padding: 5px;
-      cursor: pointer;
-      margin-left: 5px;
+      border-radius: 5px;
     }
 
     /* 속성 필터 팝업 */
@@ -104,6 +86,20 @@
       border-radius: 5px;
       cursor: pointer;
     }
+
+    .filter-popup .select-all, .filter-popup .deselect-all {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #28a745;
+      color: white;
+      text-align: center;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .filter-popup .deselect-all { background-color: #dc3545; }
   </style>
 </head>
 <body>
@@ -111,23 +107,18 @@
   <!-- 최상단 고정 제목 -->
   <div class="header-title">FGO 서번트 데이터 검색</div>
 
-  <!-- 필터 버튼을 테이블 위에 배치 -->
-  <div class="filter-container">
-    <div class="filter-box" id="filterStar">별</div>
-    <div class="filter-box" id="filterClass">클래스</div>
-    <div class="filter-box" id="filterName">서번트 이름</div>
-    <div class="filter-box" id="filterAttr">
-      속성 <button class="filter-btn" id="toggleFilter">속성 필터</button>
-    </div>
+  <!-- 필터 버튼을 테이블 위에 추가 -->
+  <div class="filter-btn-container">
+    <button class="filter-btn" id="toggleFilter">속성 필터</button>
   </div>
 
   <table id="servantTable" class="display">
     <thead>
       <tr>
-        <th id="thStar">별</th>
-        <th id="thClass">클래스</th>
-        <th id="thName">서번트 이름</th>
-        <th id="thAttr">속성</th>
+        <th>별</th>
+        <th>클래스</th>
+        <th>서번트 이름</th>
+        <th>속성</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -156,10 +147,12 @@
           var fields = results.meta.fields;
           var attributeFields = fields.filter(field => field.toLowerCase().startsWith("attribute"));
           attributeFields.sort((a, b) => (parseInt(a.replace(/[^0-9]/g, "")) || 0) - (parseInt(b.replace(/[^0-9]/g, "")) || 0));
+          var attributeSet = new Set();
 
           var tbodyHTML = "";
           results.data.forEach(function(row) {
             var attrValues = attributeFields.map(field => (row[field] || "").trim()).filter(val => val !== "");
+            attrValues.forEach(val => attributeSet.add(val));
             var allAttrs = attrValues.join(" / ");
             tbodyHTML += `<tr>
               <td>${row.star || ""}</td>
@@ -176,15 +169,20 @@
             language: { search: "검색:" }
           });
 
-          function updateFilterBoxSizes() {
-            $("#filterStar").width($("#thStar").outerWidth()).height($("#thStar").outerHeight());
-            $("#filterClass").width($("#thClass").outerWidth()).height($("#thClass").outerHeight());
-            $("#filterName").width($("#thName").outerWidth()).height($("#thName").outerHeight());
-            $("#filterAttr").width($("#thAttr").outerWidth()).height($("#thAttr").outerHeight());
+          function createAttributeFilters() {
+            var container = $("#filter-options");
+            container.empty();
+            var sortedAttributes = Array.from(attributeSet).sort();
+            sortedAttributes.forEach(function(value) {
+              var btn = $(`<span class="toggle-btn" data-value="${value}">${value}</span>`)
+                .click(function() {
+                  $(this).toggleClass("active");
+                });
+              container.append(btn);
+            });
           }
 
-          $(window).on("resize", updateFilterBoxSizes);
-          updateFilterBoxSizes();
+          createAttributeFilters();
         }
       });
 
@@ -195,6 +193,7 @@
 
       $("#confirmFilter").click(function() {
         selectedAttributes = $("#filter-options .toggle-btn.active").map((_, el) => $(el).data("value")).get();
+        console.log("선택한 속성:", selectedAttributes);
         table.draw();
         $("#attributeFilter").hide();
       });
