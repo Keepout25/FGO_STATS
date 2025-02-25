@@ -6,8 +6,8 @@
   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.2/css/jquery.dataTables.css">
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; margin-top: 80px; }
-    
-    /* 제목 고정 */
+
+    /* 최상단 고정 제목 */
     .header-title {
       position: fixed;
       top: 0;
@@ -51,6 +51,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      position: relative;
     }
 
     .filter-box button {
@@ -62,6 +63,7 @@
       margin-left: 5px;
     }
 
+    /* 속성 필터 팝업 */
     .filter-popup {
       display: none;
       position: fixed;
@@ -114,8 +116,8 @@
     <div class="filter-box" id="filterStar">별</div>
     <div class="filter-box" id="filterClass">클래스</div>
     <div class="filter-box" id="filterName">서번트 이름</div>
-    <div class="filter-box" id="filterAttr">속성 
-      <button id="toggleFilter">필터</button>
+    <div class="filter-box" id="filterAttr">
+      속성 <button id="toggleFilter">필터</button>
     </div>
   </div>
 
@@ -144,6 +146,7 @@
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
   <script>
     $(document).ready(function() {
+      var selectedAttributes = [];
       var table;
 
       Papa.parse('Data/fgo_attributes.csv', {
@@ -151,7 +154,6 @@
         header: true,
         complete: function(results) {
           var fields = results.meta.fields;
-          var fixedFields = ["star", "character_class", "character_name"];
           var attributeFields = fields.filter(field => field.toLowerCase().startsWith("attribute"));
           attributeFields.sort((a, b) => (parseInt(a.replace(/[^0-9]/g, "")) || 0) - (parseInt(b.replace(/[^0-9]/g, "")) || 0));
 
@@ -171,16 +173,7 @@
           table = $("#servantTable").DataTable({
             paging: false,
             autoWidth: true,
-            language: { search: "검색:" },
-            columns: [
-              { title: "별" },
-              { title: "클래스" },
-              { title: "서번트 이름" },
-              { title: "속성", orderable: false }
-            ],
-            drawCallback: function() {
-              updateFilterBoxSizes();
-            }
+            language: { search: "검색:" }
           });
 
           function updateFilterBoxSizes() {
@@ -201,6 +194,8 @@
       });
 
       $("#confirmFilter").click(function() {
+        selectedAttributes = $("#filter-options .toggle-btn.active").map((_, el) => $(el).data("value")).get();
+        table.draw();
         $("#attributeFilter").hide();
       });
 
