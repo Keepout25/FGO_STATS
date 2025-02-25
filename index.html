@@ -31,14 +31,18 @@
     /* 팝업 스타일 */
     .filter-popup {
       display: none;
-      position: absolute;
+      position: fixed;
+      width: 600px;
+      height: 1200px;
       background-color: white;
       border: 1px solid #ccc;
       padding: 10px;
       box-shadow: 0px 2px 5px rgba(0,0,0,0.3);
       z-index: 1000;
-      max-height: 200px;
       overflow-y: auto;
+      resize: both;
+      right: 10px;
+      bottom: 10px;
     }
     .filter-popup .toggle-btn {
       display: inline-block;
@@ -53,6 +57,17 @@
       background-color: #007bff;
       color: white;
     }
+    .filter-popup .confirm-btn {
+      display: block;
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      text-align: center;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -60,7 +75,12 @@
   
   <div class="filter-container">
     <button class="filter-btn" id="toggleFilter">속성 필터</button>
-    <div class="filter-popup" id="attributeFilter"></div>
+  </div>
+  
+  <div class="filter-popup" id="attributeFilter">
+    <h3>속성 선택</h3>
+    <div id="filter-options"></div>
+    <button class="confirm-btn" id="confirmFilter">확인</button>
   </div>
   
   <table id="servantTable" class="display">
@@ -119,24 +139,13 @@
             ]
           });
           
-          function updateTable() {
-            table.rows().every(function() {
-              var row = this.node();
-              var attributesText = $(row).find(".attributes").text();
-              var hasMatch = selectedAttributes.length === 0 || selectedAttributes.every(attr => attributesText.includes(attr));
-              $(row).toggle(hasMatch);
-            });
-          }
-          
           function createAttributeFilters() {
-            var container = $("#attributeFilter");
+            var container = $("#filter-options");
             container.empty();
             attributeSet.forEach(function(value) {
               var btn = $(`<span class="toggle-btn" data-value="${value}">${value}</span>`)
                 .click(function() {
                   $(this).toggleClass("active");
-                  selectedAttributes = $("#attributeFilter .toggle-btn.active").map((_, el) => $(el).data("value")).get();
-                  updateTable();
                 });
               container.append(btn);
             });
@@ -151,8 +160,9 @@
         $("#attributeFilter").toggle();
       });
       
-      $(document).click(function() {
-        $("#attributeFilter").hide();
+      $("#confirmFilter").click(function() {
+        selectedAttributes = $("#filter-options .toggle-btn.active").map((_, el) => $(el).data("value")).get();
+        table.draw();
       });
     });
   </script>
