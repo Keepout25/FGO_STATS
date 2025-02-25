@@ -9,54 +9,32 @@
     body { font-family: Arial, sans-serif; padding: 20px; }
     h1 { margin-bottom: 20px; }
     
-    /* 헤더 내 필터 버튼과 팝업 스타일 */
-    th { position: relative; }
-    .filter-btn {
-      margin-left: 5px;
-      padding: 2px 5px;
-      font-size: 12px;
-      cursor: pointer;
-    }
+    /* 필터 팝업 스타일 수정 */
     .filter-popup {
       display: none;
       position: absolute;
-      top: 100%;
-      left: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 30px;
       background-color: #fff;
       border: 1px solid #ccc;
-      padding: 5px;
-      box-shadow: 0px 2px 5px rgba(0,0,0,0.3);
+      padding: 10px;
+      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3);
       z-index: 1000;
       white-space: nowrap;
+      max-height: 300px;
+      overflow-y: auto;
     }
-    .filter-popup .toggle-btn {
-      display: inline-block;
-      padding: 2px 5px;
-      margin: 2px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-    }
-    .filter-popup .toggle-btn.active {
-      background-color: #007bff;
-      color: #fff;
-    }
-    
-    /* 테이블 레이아웃 및 셀 스타일 */
-    table.dataTable {
-      table-layout: auto !important;
-      width: auto !important;
-    }
-    table.dataTable td {
-      white-space: nowrap;
+
+    /* 필터 버튼이 눌렸을 때 팝업이 보이도록 */
+    .filter-popup.active {
+      display: block !important;
     }
   </style>
 </head>
 <body>
   <h1>FGO 서번트 데이터 검색 - 토글 필터</h1>
   
-  <!-- 테이블: 헤더에 필터 버튼과 팝업 포함 (서번트 이름은 필터 없음) -->
   <table id="servantTable" class="display">
     <thead>
       <tr>
@@ -72,7 +50,6 @@
         </th>
         <th>
           서번트 이름
-          <!-- 서번트 이름은 필터 없이 제목만 표시 -->
         </th>
         <th>
           속성
@@ -84,21 +61,14 @@
     <tbody></tbody>
   </table>
   
-  <!-- jQuery, DataTables, PapaParse -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.2/js/jquery.dataTables.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
   
   <script>
     $(document).ready(function() {
-      // 필터 상태 객체: star, character_class, attribute만 관리 (서번트 이름 필터는 없음)
-      var filterState = {
-        star: [],
-        character_class: [],
-        attribute: []
-      };
-      
-      var table;  // DataTables 객체
+      var filterState = { star: [], character_class: [], attribute: [] };
+      var table;
       
       Papa.parse('Data/fgo_attributes.csv', {
         download: true,
@@ -108,125 +78,54 @@
           console.log("CSV 데이터:", results.data);
           
           var data = results.data;
-          var fields = results.meta.fields;
-          var fixedFields = ["star", "character_class", "character_name"];
-          var attributeFields = fields.filter(function(field) {
-            return field.toLowerCase().startsWith("attribute");
-          }).sort(function(a, b) {
-            var numA = parseInt(a.replace(/[^0-9]/g, "")) || 0;
-            var numB = parseInt(b.replace(/[^0-9]/g, "")) || 0;
-            return numA - numB;
-          });
-          
-          // 고유값 수집 객체 (고정 필드 모두 포함)
-          var distinct = {
-            star: {},
-            character_class: {},
-            character_name: {},
-            attribute: {}
-          };
+          var distinct = { star: {}, character_class: {}, attribute: {} };
           
           var tbodyHTML = "";
           data.forEach(function(row) {
-            fixedFields.forEach(function(field) {
-              if (row[field] && row[field].trim() !== "") {
-                distinct[field][row[field].trim()] = true;
-              }
-            });
-            var attrValues = attributeFields.map(function(field) {
-              return (row[field] || "").trim();
-            }).filter(function(val) { return val !== ""; });
-            attrValues.forEach(function(val) {
-              distinct.attribute[val] = true;
-            });
-            var allAttrs = attrValues.join(" / ");
-            
-            tbodyHTML += "<tr>";
-            tbodyHTML += "<td>" + (row.star || "") + "</td>";
-            tbodyHTML += "<td>" + (row.character_class || "") + "</td>";
-            tbodyHTML += "<td>" + (row.character_name || "") + "</td>";
-            tbodyHTML += "<td>" + allAttrs + "</td>";
-            tbodyHTML += "</tr>";
+            distinct.star[row.star] = true;
+            distinct.character_class[row.character_class] = true;
+            row.attributes.split(" / ").forEach(attr => distinct.attribute[attr] = true);
+            tbodyHTML += `<tr>
+              <td>${row.star || ""}</td>
+              <td>${row.character_class || ""}</td>
+              <td>${row.character_name || ""}</td>
+              <td>${row.attributes || ""}</td>
+            </tr>`;
           });
           $("#servantTable tbody").html(tbodyHTML);
           
-          table = $("#servantTable").DataTable({
-            paging: false,
-            autoWidth: true,
-            language: { search: "검색:" },
-            columns: [
-              { title: "별" },
-              { title: "클래스" },
-              { title: "서번트 이름" },
-              { title: "속성", orderable: false }
-            ]
-          });
+          table = $("#servantTable").DataTable({ paging: false, autoWidth: true, language: { search: "검색:" } });
           
-          // DataTables 커스텀 필터 함수 (토글 필터 조건 적용)
-          $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-            var starVal = data[0];         // 별
-            var classVal = data[1];        // 클래스
-            var attributeVal = data[3];    // 속성 (결합된 문자열)
-            if (filterState.star.length > 0 && filterState.star.indexOf(starVal) === -1) return false;
-            if (filterState.character_class.length > 0 && filterState.character_class.indexOf(classVal) === -1) return false;
-            if (filterState.attribute.length > 0) {
-              var matched = false;
-              filterState.attribute.forEach(function(val) {
-                if (attributeVal.indexOf(val) !== -1) matched = true;
-              });
-              if (!matched) return false;
-            }
-            return true;
-          });
-          
-          // 토글 버튼 생성 함수
           function createToggleButtons(field, popupId) {
             var container = $("#" + popupId);
             container.empty();
-            console.log("Creating toggle buttons for", field, ":", distinct[field]);
             Object.keys(distinct[field]).sort().forEach(function(value) {
-              var btn = $("<span></span>")
-                .addClass("toggle-btn")
-                .text(value)
-                .attr("data-value", value)
+              var btn = $(`<span class="toggle-btn" data-value="${value}">${value}</span>`)
                 .click(function(e) {
                   e.stopPropagation();
                   $(this).toggleClass("active");
-                  var selected = [];
-                  $("#" + popupId + " .toggle-btn.active").each(function() {
-                    selected.push($(this).attr("data-value"));
-                  });
-                  filterState[field] = selected;
+                  filterState[field] = $("#" + popupId + " .toggle-btn.active").map((_, el) => $(el).data("value")).get();
                   table.draw();
                 });
               container.append(btn);
             });
           }
           
-          // 토글 버튼 생성: 별, 클래스, 속성 (서번트 이름 제외)
           createToggleButtons("star", "popup-star");
           createToggleButtons("character_class", "popup-character_class");
           createToggleButtons("attribute", "popup-attribute");
-          
-          // 필터 버튼 클릭 시 팝업 토글
-          $(".filter-btn").click(function(e) {
-            e.stopPropagation();
-            var filterKey = $(this).attr("data-filter");
-            var popup = $("#popup-" + filterKey);
-            $(".filter-popup").not(popup).hide();
-            popup.toggle();
-          });
-          
-          // 문서 클릭 시 모든 팝업 닫기
-          $(document).click(function() {
-            $(".filter-popup").hide();
-          });
-          
-          table.draw();
-        },
-        error: function(error) {
-          console.error("CSV 파싱 실패:", error);
         }
+      });
+      
+      $(".filter-btn").click(function(e) {
+        e.stopPropagation();
+        var popup = $("#popup-" + $(this).data("filter"));
+        $(".filter-popup").not(popup).removeClass("active");
+        popup.toggleClass("active");
+      });
+      
+      $(document).click(function() {
+        $(".filter-popup").removeClass("active");
       });
     });
   </script>
