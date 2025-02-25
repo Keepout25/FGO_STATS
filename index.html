@@ -149,11 +149,12 @@
         $("#attributeFilter").toggle();
       });
 
-      // 확인 버튼 클릭 시 필터 적용
+      // 확인 버튼 클릭 시 필터 적용 및 팝업 닫기
       $("#confirmFilter").click(function() {
         selectedAttributes = $("#filter-options .toggle-btn.active").map((_, el) => $(el).data("value")).get();
         console.log("선택한 속성:", selectedAttributes);
         table.draw();
+        $("#attributeFilter").hide();  // 팝업 닫기 추가
       });
     });
   </script>
