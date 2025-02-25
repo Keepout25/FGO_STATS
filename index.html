@@ -54,8 +54,9 @@
           });
           $('#servantTable tbody').html(tbodyHTML);
           
-          // DataTables 초기화 (열 개수를 명시)
+          // DataTables 초기화 – 페이징 비활성화하여 모든 행을 한 페이지에 표시
           $('#servantTable').DataTable({
+            paging: false, // 페이징 기능 비활성화
             language: { search: "검색:" },
             columns: [
               { title: "별" },
