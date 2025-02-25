@@ -107,11 +107,16 @@
   <!-- 최상단 고정 제목 -->
   <div class="header-title">FGO 서번트 데이터 검색</div>
 
-  <!-- 필터 버튼을 테이블 위에 추가 -->
   <div class="filter-btn-container">
-    <button class="filter-btn" id="toggleFilter">속성 필터</button>
+    <div class="filter-box" id="filterStar">별</div>
+    <div class="filter-box" id="filterClass">클래스</div>
+    <div class="filter-box" id="filterName">서번트 이름</div>
+    <div class="filter-box" id="filterAttr">
+      속성 <button class="filter-btn" id="toggleFilter">속성 필터</button>
+    </div>
   </div>
 
+  
   <table id="servantTable" class="display">
     <thead>
       <tr>
