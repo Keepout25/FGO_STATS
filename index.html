@@ -104,12 +104,12 @@
         download: true,
         header: true,
         complete: function(results) {
+          console.log("CSV 헤더:", results.meta.fields);
+          console.log("CSV 데이터:", results.data);
+          
           var data = results.data;
           var fields = results.meta.fields;
-          // 고정 필드 정의
           var fixedFields = ["star", "character_class", "character_name"];
-          
-          // "attribute"로 시작하는 모든 필드를 추출 및 숫자 순 정렬
           var attributeFields = fields.filter(function(field) {
             return field.toLowerCase().startsWith("attribute");
           }).sort(function(a, b) {
@@ -118,7 +118,7 @@
             return numA - numB;
           });
           
-          // 고유값 수집 객체 (수집할 고정 필드 모두 포함)
+          // 고유값 수집 객체 (고정 필드 모두 포함)
           var distinct = {
             star: {},
             character_class: {},
@@ -128,17 +128,14 @@
           
           var tbodyHTML = "";
           data.forEach(function(row) {
-            // 고정 필드의 고유값 수집
             fixedFields.forEach(function(field) {
               if (row[field] && row[field].trim() !== "") {
                 distinct[field][row[field].trim()] = true;
               }
             });
-            // attribute 필드의 값을 결합 (빈 값은 제외)
             var attrValues = attributeFields.map(function(field) {
               return (row[field] || "").trim();
             }).filter(function(val) { return val !== ""; });
-            // distinct의 attribute에 추가
             attrValues.forEach(function(val) {
               distinct.attribute[val] = true;
             });
@@ -153,7 +150,6 @@
           });
           $("#servantTable tbody").html(tbodyHTML);
           
-          // DataTables 초기화 (페이징 비활성화, 자동 너비 조절, 속성 열 정렬 비활성화)
           table = $("#servantTable").DataTable({
             paging: false,
             autoWidth: true,
@@ -171,7 +167,6 @@
             var starVal = data[0];         // 별
             var classVal = data[1];        // 클래스
             var attributeVal = data[3];    // 속성 (결합된 문자열)
-            
             if (filterState.star.length > 0 && filterState.star.indexOf(starVal) === -1) return false;
             if (filterState.character_class.length > 0 && filterState.character_class.indexOf(classVal) === -1) return false;
             if (filterState.attribute.length > 0) {
@@ -184,17 +179,18 @@
             return true;
           });
           
-          // 토글 버튼 생성 함수 (팝업에 버튼 추가)
+          // 토글 버튼 생성 함수
           function createToggleButtons(field, popupId) {
             var container = $("#" + popupId);
             container.empty();
+            console.log("Creating toggle buttons for", field, ":", distinct[field]);
             Object.keys(distinct[field]).sort().forEach(function(value) {
               var btn = $("<span></span>")
                 .addClass("toggle-btn")
                 .text(value)
                 .attr("data-value", value)
                 .click(function(e) {
-                  e.stopPropagation();  // 팝업 닫힘 방지
+                  e.stopPropagation();
                   $(this).toggleClass("active");
                   var selected = [];
                   $("#" + popupId + " .toggle-btn.active").each(function() {
@@ -207,12 +203,12 @@
             });
           }
           
-          // 토글 버튼 생성: 별, 클래스, 속성 (서번트 이름은 제외)
+          // 토글 버튼 생성: 별, 클래스, 속성 (서번트 이름 제외)
           createToggleButtons("star", "popup-star");
           createToggleButtons("character_class", "popup-character_class");
           createToggleButtons("attribute", "popup-attribute");
           
-          // 필터 버튼 클릭 시 해당 팝업 토글 (다른 팝업은 닫음)
+          // 필터 버튼 클릭 시 팝업 토글
           $(".filter-btn").click(function(e) {
             e.stopPropagation();
             var filterKey = $(this).attr("data-filter");
