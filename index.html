@@ -105,6 +105,8 @@
         download: true,
         header: true,
         complete: function(results) {
+          console.log("CSV 헤더:", results.meta.fields);
+          console.log("CSV 데이터:", results.data);
           var data = results.data;
           // CSV 헤더 목록과 고정 필드 정의
           var fields = results.meta.fields;
