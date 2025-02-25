@@ -3,32 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <title>FGO 서번트 데이터 검색</title>
-  <!-- DataTables CSS -->
   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.2/css/jquery.dataTables.css">
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
     h1 { margin-bottom: 20px; }
-    /* 테이블 레이아웃 자동 조절 */
-    table.dataTable {
-      table-layout: auto !important;
-      width: auto !important;
-    }
-    table.dataTable td {
-      white-space: nowrap;
-    }
-    /* 필터 버튼 스타일 */
-    .filter-container {
-      margin-bottom: 10px;
-    }
-    .filter-btn {
-      padding: 5px 10px;
-      cursor: pointer;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-    }
-    /* 팝업 스타일 */
+    table.dataTable { table-layout: auto !important; width: auto !important; }
+    table.dataTable td { white-space: nowrap; }
+    .filter-container { margin-bottom: 10px; }
+    .filter-btn { padding: 5px 10px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px; }
     .filter-popup {
       display: none;
       position: fixed;
@@ -53,10 +35,7 @@
       cursor: pointer;
       background-color: white;
     }
-    .filter-popup .toggle-btn.active {
-      background-color: #007bff;
-      color: white;
-    }
+    .filter-popup .toggle-btn.active { background-color: #007bff; color: white; }
     .filter-popup .confirm-btn {
       display: block;
       margin-top: 20px;
@@ -138,7 +117,16 @@
               { title: "속성", orderable: false }
             ]
           });
-          
+
+          // 필터링 함수 추가
+          $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+            var attributesText = data[3]; // 속성 컬럼
+            if (selectedAttributes.length === 0) {
+              return true;
+            }
+            return selectedAttributes.every(attr => attributesText.includes(attr));
+          });
+
           function createAttributeFilters() {
             var container = $("#filter-options");
             container.empty();
@@ -150,18 +138,21 @@
               container.append(btn);
             });
           }
-          
+
           createAttributeFilters();
         }
       });
-      
+
+      // 속성 필터 토글 버튼
       $("#toggleFilter").click(function(e) {
         e.stopPropagation();
         $("#attributeFilter").toggle();
       });
-      
+
+      // 확인 버튼 클릭 시 필터 적용
       $("#confirmFilter").click(function() {
         selectedAttributes = $("#filter-options .toggle-btn.active").map((_, el) => $(el).data("value")).get();
+        console.log("선택한 속성:", selectedAttributes);
         table.draw();
       });
     });
