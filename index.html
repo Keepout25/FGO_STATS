@@ -5,10 +5,11 @@
   <title>FGO 서번트 데이터 검색</title>
   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.2/css/jquery.dataTables.css">
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
-    h1 { margin-bottom: 20px; }
-    table.dataTable { table-layout: auto !important; width: auto !important; margin: 0 auto; }
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    h1 { margin-bottom: 20px; text-align: center; }
+    table.dataTable { table-layout: auto !important; width: auto !important; }
     table.dataTable td { white-space: nowrap; }
+    .filter-btn { padding: 5px 10px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px; }
     .filter-popup {
       display: none;
       position: fixed;
@@ -63,21 +64,9 @@
 <body>
   <h1>FGO 서번트 데이터 검색</h1>
 
-  <table id="servantTable" class="display">
-    <thead>
-      <tr>
-        <th>별</th>
-        <th>클래스</th>
-        <th>서번트 이름</th>
-        <th>
-          속성
-          <button class="filter-btn" id="toggleFilter">속성 필터</button>
-        </th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
 
+    
+  
   <div class="filter-popup" id="attributeFilter">
     <h3>속성 선택</h3>
     <button class="select-all">모두 선택</button>
@@ -85,6 +74,26 @@
     <div id="filter-options"></div>
     <button class="confirm-btn" id="confirmFilter">확인</button>
   </div>
+  
+  <table id="servantTable" class="display">
+    <thead>
+      <tr>
+        <th>별</th>
+        <th>클래스</th>
+        <th>서번트 이름</th>
+        <th>속성</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th>별</th>
+        <th>클래스</th>
+        <th>서번트 이름</th>
+        <th><button class="filter-btn" id="toggleFilter">속성 필터</button></th>
+      </tr>
+    </tbody>
+    <tbody></tbody>
+  </table>
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.2/js/jquery.dataTables.js"></script>
