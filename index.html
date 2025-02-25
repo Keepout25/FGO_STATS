@@ -46,8 +46,7 @@
           let tbodyHTML = '';
           data.forEach(row => {
             tbodyHTML += '<tr>';
-            // 헤더의 순서대로 값을 넣습니다. (여기서는 url, star, character_class, character_name, attribute1, attribute2, attribute3)
-            tbodyHTML += `<td>${row.url || ''}</td>`;
+            // 헤더의 순서대로 값을 넣습니다. (여기서는 star, character_class, character_name, attribute1, attribute2, attribute3)
             tbodyHTML += `<td>${row.star || ''}</td>`;
             tbodyHTML += `<td>${row.character_class || ''}</td>`;
             tbodyHTML += `<td>${row.character_name || ''}</td>`;
