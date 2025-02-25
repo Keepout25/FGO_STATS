@@ -16,16 +16,53 @@
     table.dataTable td {
       white-space: nowrap;
     }
-    /* 필터 입력란 스타일 */
-    thead input {
-      width: 100%;
-      box-sizing: border-box;
+    /* 필터 버튼 스타일 */
+    .filter-container {
+      margin-bottom: 10px;
+    }
+    .filter-btn {
+      padding: 5px 10px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    /* 팝업 스타일 */
+    .filter-popup {
+      display: none;
+      position: absolute;
+      background-color: white;
+      border: 1px solid #ccc;
+      padding: 10px;
+      box-shadow: 0px 2px 5px rgba(0,0,0,0.3);
+      z-index: 1000;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .filter-popup .toggle-btn {
+      display: inline-block;
+      padding: 5px;
+      margin: 2px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+      background-color: white;
+    }
+    .filter-popup .toggle-btn.active {
+      background-color: #007bff;
+      color: white;
     }
   </style>
 </head>
 <body>
   <h1>FGO 서번트 데이터 검색</h1>
-  <!-- 고정 필드: 별, 클래스, 서번트 이름 / 속성은 한 셀에 결합 -->
+  
+  <div class="filter-container">
+    <button class="filter-btn" id="toggleFilter">속성 필터</button>
+    <div class="filter-popup" id="attributeFilter"></div>
+  </div>
+  
   <table id="servantTable" class="display">
     <thead>
       <tr>
@@ -38,52 +75,39 @@
     <tbody></tbody>
   </table>
 
-  <!-- jQuery, DataTables, PapaParse -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.2/js/jquery.dataTables.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
   <script>
     $(document).ready(function() {
+      var selectedAttributes = [];
+      var table;
+      
       Papa.parse('Data/fgo_attributes.csv', {
         download: true,
-        header: true, // CSV의 첫 줄을 헤더로 사용
+        header: true,
         complete: function(results) {
-          // CSV 헤더 목록 가져오기
           var fields = results.meta.fields;
-          // 고정 필드
           var fixedFields = ["star", "character_class", "character_name"];
-          // "attribute"로 시작하는 모든 필드 추출 (대소문자 무시)
-          var attributeFields = fields.filter(function(field) {
-            return field.toLowerCase().startsWith("attribute");
-          });
-          // attribute 필드를 숫자 순서대로 정렬 (예: attribute1, attribute2, ...)
-          attributeFields.sort(function(a, b) {
-            var numA = parseInt(a.replace(/[^0-9]/g, "")) || 0;
-            var numB = parseInt(b.replace(/[^0-9]/g, "")) || 0;
-            return numA - numB;
-          });
-
+          var attributeFields = fields.filter(field => field.toLowerCase().startsWith("attribute"));
+          attributeFields.sort((a, b) => (parseInt(a.replace(/[^0-9]/g, "")) || 0) - (parseInt(b.replace(/[^0-9]/g, "")) || 0));
+          var attributeSet = new Set();
+          
           var tbodyHTML = "";
           results.data.forEach(function(row) {
-            // 모든 attribute 필드의 값을 결합 (빈 값은 제외)
-            var attrValues = attributeFields.map(function(field) {
-              return (row[field] || "").trim();
-            }).filter(function(val) {
-              return val !== "";
-            });
+            var attrValues = attributeFields.map(field => (row[field] || "").trim()).filter(val => val !== "");
+            attrValues.forEach(val => attributeSet.add(val));
             var allAttrs = attrValues.join(" / ");
-            
-            tbodyHTML += "<tr>";
-            tbodyHTML += "<td>" + (row.star || "") + "</td>";
-            tbodyHTML += "<td>" + (row.character_class || "") + "</td>";
-            tbodyHTML += "<td>" + (row.character_name || "") + "</td>";
-            tbodyHTML += "<td>" + allAttrs + "</td>";
-            tbodyHTML += "</tr>";
+            tbodyHTML += `<tr>
+              <td>${row.star || ""}</td>
+              <td>${row.character_class || ""}</td>
+              <td>${row.character_name || ""}</td>
+              <td class="attributes">${allAttrs}</td>
+            </tr>`;
           });
           $("#servantTable tbody").html(tbodyHTML);
           
-          // DataTables 초기화 (페이징 비활성화, 자동 너비 조절)
-          var table = $("#servantTable").DataTable({
+          table = $("#servantTable").DataTable({
             paging: false,
             autoWidth: true,
             language: { search: "검색:" },
@@ -91,29 +115,44 @@
               { title: "별" },
               { title: "클래스" },
               { title: "서번트 이름" },
-              { title: "속성", orderable: false } // 속성 열은 정렬 비활성화
+              { title: "속성", orderable: false }
             ]
           });
           
-          // 속성 열에만 필터 기능 추가 (속성 열은 인덱스 3)
-          // 헤더 행을 복제하여 필터 입력란을 추가합니다.
-          $('#servantTable thead tr').clone(true).appendTo('#servantTable thead');
-          $('#servantTable thead tr:eq(1) th').each(function(i) {
-            if (i === 3) { // 속성 열에만 입력란 추가
-              $(this).html('<input type="text" placeholder="속성 필터" />');
-              $('input', this).on('keyup change', function() {
-                if (table.column(i).search() !== this.value) {
-                  table.column(i).search(this.value).draw();
-                }
-              });
-            } else {
-              $(this).html(''); // 나머지 열은 공란 처리
-            }
-          });
-        },
-        error: function(error) {
-          console.error("CSV 파싱 실패:", error);
+          function updateTable() {
+            table.rows().every(function() {
+              var row = this.node();
+              var attributesText = $(row).find(".attributes").text();
+              var hasMatch = selectedAttributes.length === 0 || selectedAttributes.every(attr => attributesText.includes(attr));
+              $(row).toggle(hasMatch);
+            });
+          }
+          
+          function createAttributeFilters() {
+            var container = $("#attributeFilter");
+            container.empty();
+            attributeSet.forEach(function(value) {
+              var btn = $(`<span class="toggle-btn" data-value="${value}">${value}</span>`)
+                .click(function() {
+                  $(this).toggleClass("active");
+                  selectedAttributes = $("#attributeFilter .toggle-btn.active").map((_, el) => $(el).data("value")).get();
+                  updateTable();
+                });
+              container.append(btn);
+            });
+          }
+          
+          createAttributeFilters();
         }
+      });
+      
+      $("#toggleFilter").click(function(e) {
+        e.stopPropagation();
+        $("#attributeFilter").toggle();
+      });
+      
+      $(document).click(function() {
+        $("#attributeFilter").hide();
       });
     });
   </script>
