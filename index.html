@@ -161,16 +161,17 @@
     $(document).ready(function() {
       var selectedAttributes = [];
       var table;
-
+      
       Papa.parse('Data/fgo_attributes.csv', {
         download: true,
         header: true,
         complete: function(results) {
           var fields = results.meta.fields;
+          var fixedFields = ["star", "character_class", "character_name"];
           var attributeFields = fields.filter(field => field.toLowerCase().startsWith("attribute"));
           attributeFields.sort((a, b) => (parseInt(a.replace(/[^0-9]/g, "")) || 0) - (parseInt(b.replace(/[^0-9]/g, "")) || 0));
           var attributeSet = new Set();
-
+          
           var tbodyHTML = "";
           results.data.forEach(function(row) {
             var attrValues = attributeFields.map(field => (row[field] || "").trim()).filter(val => val !== "");
@@ -184,17 +185,31 @@
             </tr>`;
           });
           $("#servantTable tbody").html(tbodyHTML);
-
+          
           table = $("#servantTable").DataTable({
             paging: false,
             autoWidth: true,
-            language: { search: "검색:" }
+            language: { search: "검색:" },
+            columns: [
+              { title: "별" },
+              { title: "클래스" },
+              { title: "서번트 이름" },
+              { title: "속성", orderable: false }
+            ]
+          });
+
+          $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+            var attributesText = data[3]; // 속성 컬럼
+            if (selectedAttributes.length === 0) {
+              return true;
+            }
+            return selectedAttributes.every(attr => attributesText.includes(attr));
           });
 
           function createAttributeFilters() {
             var container = $("#filter-options");
             container.empty();
-            var sortedAttributes = Array.from(attributeSet).sort();
+            var sortedAttributes = Array.from(attributeSet).sort(); // 속성 가나다순 정렬
             sortedAttributes.forEach(function(value) {
               var btn = $(`<span class="toggle-btn" data-value="${value}">${value}</span>`)
                 .click(function() {
