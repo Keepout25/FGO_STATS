@@ -5,75 +5,72 @@
   <title>FGO 서번트 데이터 검색</title>
   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.2/css/jquery.dataTables.css">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      margin-top: 80px;
-      background-color: #f8f9fa;
-    }
+    body { font-family: Arial, sans-serif; padding: 20px; margin-top: 80px; }
 
+    /* 최상단 고정 제목 */
     .header-title {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
-      background: #007bff;
-      color: white;
-      padding: 15px 0;
+      background: white;
+      padding: 10px 0;
       text-align: center;
       font-size: 24px;
       font-weight: bold;
       z-index: 100;
-      border-bottom: 2px solid #0056b3;
+      border-bottom: 1px solid #ccc;
     }
 
+    table.dataTable {
+      table-layout: auto !important;
+      width: auto !important;
+    }
+
+    table.dataTable td, table.dataTable th {
+      white-space: nowrap;
+    }
+
+    /* 필터 버튼 스타일 */
     .filter-btn-container {
-      display: flex;
+           display: flex;
       justify-content: center;
-      gap: 10px;
-      margin-bottom: 10px;
+      gap: 5px;
+      position: relative;
+      margin-bottom: 5px;
     }
 
+    /* 각 필터 버튼 크기 */
     .filter-box {
-      background-color: white;
+      background-color: rgba(255, 255, 255, 0.9);
       border: 1px solid #ccc;
-      padding: 8px 15px;
+      padding: 5px;
       text-align: center;
       font-weight: bold;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 5px;
-      transition: 0.3s;
-    }
-    .filter-box:hover {
-      background-color: #007bff;
-      color: white;
     }
     
     .filter-btn {
-      padding: 6px 12px;
+      padding: 5px 10px;
       cursor: pointer;
       background-color: #007bff;
       color: white;
       border: none;
       border-radius: 5px;
-      transition: 0.3s;
-    }
-    .filter-btn:hover {
-      background-color: #0056b3;
     }
 
+    /* 속성 필터 팝업 */
     .filter-popup {
       display: none;
       position: fixed;
       width: 600px;
-      max-width: 90%;
       height: 500px;
       background-color: white;
       border: 1px solid #ccc;
-      padding: 15px;
+      padding: 10px;
       box-shadow: 0px 2px 5px rgba(0,0,0,0.3);
       z-index: 1000;
       overflow-y: auto;
@@ -81,26 +78,50 @@
       left: 50%;
       top: 50%;
       transform: translate(-50%, -50%);
-      border-radius: 10px;
     }
 
-    .filter-popup .close-btn {
-      position: absolute;
-      top: 10px;
-      right: 15px;
-      background: none;
+    .filter-popup .toggle-btn {
+      display: inline-block;
+      padding: 5px;
+      margin: 2px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+      background-color: white;
+    }
+
+    .filter-popup .toggle-btn.active { background-color: #007bff; color: white; }
+    
+    .filter-popup .confirm-btn {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      text-align: center;
       border: none;
-      font-size: 18px;
+      border-radius: 5px;
       cursor: pointer;
     }
 
-    table.dataTable {
-      width: 100% !important;
-      background-color: white;
+    .filter-popup .select-all, .filter-popup .deselect-all {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #28a745;
+      color: white;
+      text-align: center;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
     }
+
+    .filter-popup .deselect-all { background-color: #dc3545; }
   </style>
 </head>
 <body>
+
+  <!-- 최상단 고정 제목 -->
   <div class="header-title">FGO 서번트 데이터 검색</div>
 
   <div class="filter-btn-container">
@@ -108,10 +129,11 @@
     <div class="filter-box" id="filterClass">클래스</div>
     <div class="filter-box" id="filterName">서번트 이름</div>
     <div class="filter-box" id="filterAttr">
-      <button class="filter-btn" id="toggleFilter">속성 필터</button>
+      속성 <button class="filter-btn" id="toggleFilter">속성 필터</button>
     </div>
   </div>
 
+  
   <table id="servantTable" class="display">
     <thead>
       <tr>
@@ -125,7 +147,6 @@
   </table>
 
   <div class="filter-popup" id="attributeFilter">
-    <button class="close-btn">&times;</button>
     <h3>속성 선택</h3>
     <button class="select-all">모두 선택</button>
     <button class="deselect-all">모두 해제</button>
@@ -137,46 +158,89 @@
   <script src="https://cdn.datatables.net/1.13.2/js/jquery.dataTables.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
   <script>
-    $(document).ready(async function() {
+    $(document).ready(function() {
       var selectedAttributes = [];
       var table;
       
-      // CSV 데이터를 비동기적으로 로드하는 함수
-      async function loadData() {
-        const response = await fetch('Data/fgo_attributes.csv');
-        const csvText = await response.text();
-        const results = Papa.parse(csvText, { header: true });
-        return results.data;
-      }
+      Papa.parse('Data/fgo_attributes.csv', {
+        download: true,
+        header: true,
+        complete: function(results) {
+          var fields = results.meta.fields;
+          var fixedFields = ["star", "character_class", "character_name"];
+          var attributeFields = fields.filter(field => field.toLowerCase().startsWith("attribute"));
+          attributeFields.sort((a, b) => (parseInt(a.replace(/[^0-9]/g, "")) || 0) - (parseInt(b.replace(/[^0-9]/g, "")) || 0));
+          var attributeSet = new Set();
+          
+          var tbodyHTML = "";
+          results.data.forEach(function(row) {
+            var attrValues = attributeFields.map(field => (row[field] || "").trim()).filter(val => val !== "");
+            attrValues.forEach(val => attributeSet.add(val));
+            var allAttrs = attrValues.join(" / ");
+            tbodyHTML += `<tr>
+              <td>${row.star || ""}</td>
+              <td>${row.character_class || ""}</td>
+              <td>${row.character_name || ""}</td>
+              <td class="attributes">${allAttrs}</td>
+            </tr>`;
+          });
+          $("#servantTable tbody").html(tbodyHTML);
+          
+          table = $("#servantTable").DataTable({
+            paging: false,
+            autoWidth: true,
+            language: { search: "검색:" },
+            columns: [
+              { title: "별" },
+              { title: "클래스" },
+              { title: "서번트 이름" },
+              { title: "속성", orderable: false }
+            ]
+          });
 
-      let data = await loadData();
-      var tbodyHTML = "";
-      var attributeSet = new Set();
+          $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+            var attributesText = data[3]; // 속성 컬럼
+            if (selectedAttributes.length === 0) {
+              return true;
+            }
+            return selectedAttributes.every(attr => attributesText.includes(attr));
+          });
 
-      // 데이터를 테이블에 삽입
-      data.forEach(row => {
-        var attrValues = Object.values(row).filter(val => val && val.includes("attribute"));
-        attrValues.forEach(val => attributeSet.add(val));
-        tbodyHTML += `<tr>
-          <td>${row.star || ""}</td>
-          <td>${row.character_class || ""}</td>
-          <td>${row.character_name || ""}</td>
-          <td class="attributes">${attrValues.join(" / ")}</td>
-        </tr>`;
+          function createAttributeFilters() {
+            var container = $("#filter-options");
+            container.empty();
+            var sortedAttributes = Array.from(attributeSet).sort(); // 속성 가나다순 정렬
+            sortedAttributes.forEach(function(value) {
+              var btn = $(`<span class="toggle-btn" data-value="${value}">${value}</span>`)
+                .click(function() {
+                  $(this).toggleClass("active");
+                });
+              container.append(btn);
+            });
+          }
+
+          createAttributeFilters();
+        }
       });
-      $("#servantTable tbody").html(tbodyHTML);
 
-      // DataTables 초기화
-      table = $("#servantTable").DataTable({ paging: false, language: { search: "검색:" } });
-
-      // 속성 필터 팝업 열기
-      $("#toggleFilter").click(function() {
-        $("#attributeFilter").show();
+      $("#toggleFilter").click(function(e) {
+        e.stopPropagation();
+        $("#attributeFilter").toggle();
       });
 
-      // 속성 필터 닫기 버튼
-      $(".close-btn").click(function() {
+      $("#confirmFilter").click(function() {
+        selectedAttributes = $("#filter-options .toggle-btn.active").map((_, el) => $(el).data("value")).get();
+        console.log("선택한 속성:", selectedAttributes);
+        table.draw();
         $("#attributeFilter").hide();
+      });
+
+      $(".select-all").click(function() {
+        $(".toggle-btn").addClass("active");
+      });
+
+      $(".deselect-all").click(function() {
+        $(".toggle-btn").removeClass("active");
       });
     });
   </script>
