@@ -10,9 +10,9 @@
   <div class="header-title">FGO 서번트 데이터 검색</div>
 
   <div class="filter-btn-container">
-    <button class="filter-btn1" id="toggleFilter">별</button>
-    <button class="filter-btn2" id="toggleFilter">클래스</button>
-    <button class="filter-btn" id="toggleFilter">속성</button>
+    <button class="filter-btn" id="toggleFilter_star">별</button>
+    <button class="filter-btn" id="toggleFilter_class">클래스</button>
+    <button class="filter-btn" id="toggleFilter_attr">속성</button>
   </div>
 
   <table id="servantTable" class="display">
@@ -107,7 +107,7 @@
 
       
       // 속성 필터 팝업 토글 기능
-      $("#toggleFilter").click(function(e) {
+      $("#toggleFilter_attr").click(function(e) {
         e.stopPropagation();  // 이벤트 전파 방지
         $("#attributeFilter").toggle();  // 토글 기능 추가
       });
