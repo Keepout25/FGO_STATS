@@ -27,6 +27,7 @@
     <tbody></tbody>
   </table>
 
+  <!-- 속성 필터 팝업 -->
   <div class="filter-popup" id="attributeFilter">
     <h3>속성 선택</h3>
     <button class="select-all">모두 선택</button>
@@ -34,6 +35,27 @@
     <div id="filter-options"></div>
     <button class="confirm-btn" id="confirmFilter">확인</button>
   </div>
+  
+  <!-- 별 필터 팝업 -->
+  <div class="filter-popup" id="starFilter">
+    <h3>레어도 선택</h3>
+    <button class="select-all-star">모두 선택</button>
+    <button class="deselect-all-star">모두 해제</button>
+    <div id="star-options"></div>
+    <button class="confirm-btn" id="confirmStarFilter">확인</button>
+  </div>
+
+<!-- 클래스 필터 팝업 -->
+<div class="filter-popup" id="classFilter">
+  <h3>클래스 선택</h3>
+  <button class="select-all-class">모두 선택</button>
+  <button class="deselect-all-class">모두 해제</button>
+  <div id="class-options"></div>
+  <button class="confirm-btn" id="confirmClassFilter">확인</button>
+</div>
+
+
+  
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.2/js/jquery.dataTables.js"></script>
@@ -41,6 +63,8 @@
   <script>
     $(document).ready(async function() {
       var selectedAttributes = [];
+      var selectedStars = [];
+      var selectedClasses = [];
       var table;
       
       // CSV 데이터를 비동기적으로 로드하는 함수
@@ -54,12 +78,16 @@
         attributeFields.sort((a, b) => (parseInt(a.replace(/[^0-9]/g, "")) || 0) - (parseInt(b.replace(/[^0-9]/g, "")) || 0));
 
         var attributeSet = new Set();
+        var starSet = new Set();
+        var classSet = new Set();        
         var tbodyHTML = "";
 
          // 데이터를 테이블에 삽입
         results.data.forEach(row => {
           var attrValues = attributeFields.map(field => (row[field] || "").trim()).filter(val => val !== "");
           attrValues.forEach(val => attributeSet.add(val));
+          starSet.add(row.star);
+          classSet.add(row.character_class);
           tbodyHTML += `<tr>
             <td>${row.star || ""}</td>
             <td>${row.character_class || ""}</td>
@@ -76,23 +104,38 @@
         });
         
         createAttributeFilters(attributeSet);
+        createStarFilters(starSet);
+        createClassFilters(classSet);
       }
       
       await loadData();  // 테이블 데이터 로딩 실행
       
-      // DataTables 초기화
+      
+      // 필터링 로직
       $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-            var attributesText = data[3]; // 테이블의 속성 컬럼 데이터 (4번째 열)
+            var starText = data[0];  // 테이블의 별 컬럼 (1번째 열)
+            var classText = data[1]; // 테이블의 클래스 컬럼 (2번째 열)
+            var attributesText = data[3]; // 테이블의 속성 컬럼 (4번째 열)
+
+
         
-            // 선택된 속성이 없으면 전체 표시
-            if (selectedAttributes.length === 0) {
-              return true;
+            if (selectedStars.length > 0 && !selectedStars.includes(starText)) {
+              return false;
             }
-            // 선택한 속성이 테이블의 속성 데이터에 포함되어 있는지 확인
-            return selectedAttributes.every(attr => attributesText.includes(attr));
+
+            if (selectedClasses.length > 0 && !selectedClasses.includes(classText)) {
+              return false;
+            }        
+  
+            if (selectedAttributes.length > 0 && !selectedAttributes.every(attr => attributesText.includes(attr))) {
+              return false;
+            }
+            return true;
           });
 
-      //토글 생성
+      
+
+      //속성 토글 생성
       function createAttributeFilters(attributeSet) {
         var container = $("#filter-options");
         container.empty();
@@ -105,30 +148,92 @@
         });
       }
 
+      function createStarFilters(starSet) {
+        var container = $("#star-options");
+        container.empty();
+        Array.from(starSet).sort().forEach(value => {
+          var btn = $(`<span class="toggle-btn" data-value="${value}">${value}성</span>`)
+            .click(function() { 
+              $(this).toggleClass("active"); 
+            });
+          container.append(btn);
+        });
+      }
+
+      function createClassFilters(classSet) {
+        var container = $("#class-options");
+        container.empty();
+        Array.from(classSet).sort().forEach(value => {
+          var btn = $(`<span class="toggle-btn" data-value="${value}">${value}</span>`)
+            .click(function() { 
+              $(this).toggleClass("active"); 
+            });
+          container.append(btn);
+        });
+      }      
+      
       
       // 속성 필터 팝업 토글 기능
       $("#toggleFilter_attr").click(function(e) {
         e.stopPropagation();  // 이벤트 전파 방지
         $("#attributeFilter").toggle();  // 토글 기능 추가
       });
-
+      // 별 필터 팝업 토글 기능
+      $("#toggleFilter_star").click(function(e) {
+        e.stopPropagation();
+        $("#starFilter").toggle();
+      });
+      // 클래스 필터 팝업 토글 기능
+      $("#toggleFilter_class").click(function(e) {
+        e.stopPropagation();
+        $("#classFilter").toggle();
+      });
+      
       // 속성 확인 기능, 확인버튼 클릭시 팝업 닫음
       $("#confirmFilter").click(function() {
         selectedAttributes = $("#filter-options .toggle-btn.active").map((_, el) => $(el).data("value")).get();
         table.draw();
         $("#attributeFilter").hide();
       });
+      // 별 확인 기능, 확인버튼 클릭시 팝업 닫음 
+      $("#confirmStarFilter").click(function() {
+        selectedStars = $("#star-options .toggle-btn.active").map((_, el) => $(el).data("value")).get();
+        table.draw();
+        $("#starFilter").hide();
+      });
+      // 클래스 확인 기능, 확인버튼 클릭시 팝업 닫음
+      $("#confirmClassFilter").click(function() {
+        selectedClasses = $("#class-options .toggle-btn.active").map((_, el) => $(el).data("value")).get();
+        table.draw();
+        $("#classFilter").hide();
+      });
+      
 
       //속성 전체 추가 버튼
       $(".select-all").click(function() {
         $(".toggle-btn").addClass("active");
       });
-      
       //속성 전체 해제 버튼
       $(".deselect-all").click(function() {
         $(".toggle-btn").removeClass("active");
       });
-      
+      // 별 전체 추가 버튼
+      $(".select-all-star").click(function() {
+        $("#star-options .toggle-btn").addClass("active");
+      });
+      // 별 전체 해제 버튼
+      $(".deselect-all-star").click(function() {
+        $("#star-options .toggle-btn").removeClass("active");
+      });
+      // 클래스 전체 추가 버튼
+      $(".select-all-class").click(function() {
+        $("#class-options .toggle-btn").addClass("active");
+      });
+      // 클래스 전체 해제 버튼
+      $(".deselect-all-class").click(function() {
+        $("#class-options .toggle-btn").removeClass("active");
+      });
+
       
     });
     
