@@ -195,22 +195,18 @@
         });
         
         $("#servantTable tbody").html(tbodyHTML);
+
+        table = $("#servantTable").DataTable({
+          paging: false,
+          language: { search: "검색:" }        
+        });
         
         createAttributeFilters(attributeSet);
       }
       
+      await loadData();  // 테이블 데이터 로딩 실행
+      
       // DataTables 초기화
-      table = $("#servantTable").DataTable({
-        paging: false,
-        language: { search: "검색:" },
-        columns: [
-          { title: "별" },
-          { title: "클래스" },
-          { title: "서번트 이름" },
-          { title: "속성", orderable: false }
-        ]
-      });
-
       $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
             var attributesText = data[3]; // 테이블의 속성 컬럼 데이터 (4번째 열)
         
@@ -259,7 +255,7 @@
         $(".toggle-btn").removeClass("active");
       });
       
-      await loadData();  // 테이블 데이터 로딩 실행
+      
     });
     
   </script>
