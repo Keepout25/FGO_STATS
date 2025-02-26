@@ -109,7 +109,10 @@
           paging: false,
           language: { search: "검색:" }        
         });
+
         
+        console.log("별 목록:", Array.from(starSet));  // ✅ starSet 값 확인
+        console.log("클래스 목록:", Array.from(classSet));  // ✅ classSet 값 확인
         createAttributeFilters(attributeSet);
         createStarFilters(starSet);
         createClassFilters(classSet);
