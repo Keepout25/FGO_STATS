@@ -34,7 +34,7 @@
       margin-bottom: 10px;
     }
 
-/*     .filter-box {
+    .filter-box {
       background-color: white;
       border: 1px solid #ccc;
       padding: 8px 15px;
@@ -46,7 +46,11 @@
       justify-content: center;
       border-radius: 5px;
       transition: 0.3s;
-    } */
+    }
+    .filter-box:hover {
+      background-color: #007bff;
+      color: white;
+    }
     
     .filter-btn {
       padding: 6px 12px;
@@ -121,7 +125,7 @@
   </table>
 
   <div class="filter-popup" id="attributeFilter">
-    <button class="close-btn" onclick="$('#attributeFilter').hide();">&times;</button>
+    <button class="close-btn">&times;</button>
     <h3>속성 선택</h3>
     <button class="select-all">모두 선택</button>
     <button class="deselect-all">모두 해제</button>
@@ -137,6 +141,7 @@
       var selectedAttributes = [];
       var table;
       
+      // CSV 데이터를 비동기적으로 로드하는 함수
       async function loadData() {
         const response = await fetch('Data/fgo_attributes.csv');
         const csvText = await response.text();
@@ -148,6 +153,7 @@
       var tbodyHTML = "";
       var attributeSet = new Set();
 
+      // 데이터를 테이블에 삽입
       data.forEach(row => {
         var attrValues = Object.values(row).filter(val => val && val.includes("attribute"));
         attrValues.forEach(val => attributeSet.add(val));
@@ -160,20 +166,16 @@
       });
       $("#servantTable tbody").html(tbodyHTML);
 
+      // DataTables 초기화
       table = $("#servantTable").DataTable({ paging: false, language: { search: "검색:" } });
 
-      function createAttributeFilters() {
-        var container = $("#filter-options");
-        container.empty();
-        Array.from(attributeSet).sort().forEach(value => {
-          container.append(`<span class="toggle-btn" data-value="${value}">${value}</span>`);
-        });
-      }
-      createAttributeFilters();
+      // 속성 필터 팝업 열기
+      $("#toggleFilter").click(function() {
+        $("#attributeFilter").show();
+      });
 
-      $("#confirmFilter").click(function() {
-        selectedAttributes = $("#filter-options .toggle-btn.active").map((_, el) => $(el).data("value")).get();
-        table.draw();
+      // 속성 필터 닫기 버튼
+      $(".close-btn").click(function() {
         $("#attributeFilter").hide();
       });
     });
