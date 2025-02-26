@@ -86,8 +86,16 @@
         results.data.forEach(row => {
           var attrValues = attributeFields.map(field => (row[field] || "").trim()).filter(val => val !== "");
           attrValues.forEach(val => attributeSet.add(val));
-          starSet.add(row.star);
-          classSet.add(row.character_class);
+          
+          if (row.star) {  //  "별" 값이 존재할 때만 추가
+            starSet.add(parseInt(row.star));  //  숫자로 변환 후 추가
+          }
+
+          if (row.character_class) {  //  "클래스" 값이 존재할 때만 추가
+            classSet.add(row.character_class);
+          }
+
+          
           tbodyHTML += `<tr>
             <td>${row.star || ""}</td>
             <td>${row.character_class || ""}</td>
@@ -113,7 +121,7 @@
       
       // 필터링 로직
       $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-            var starText = data[0];  // 테이블의 별 컬럼 (1번째 열)
+            var starText = parseInt(data[0]);  // 테이블의 별 컬럼 (1번째 열), 문자열을 숫자로 변환
             var classText = data[1]; // 테이블의 클래스 컬럼 (2번째 열)
             var attributesText = data[3]; // 테이블의 속성 컬럼 (4번째 열)
 
@@ -203,7 +211,9 @@
       });
       // 별 확인 기능, 확인버튼 클릭시 팝업 닫음 
       $("#confirmStarFilter").click(function() {
-        selectedStars = $("#star-options .toggle-btn.active").map((_, el) => $(el).data("value")).get();
+        selectedStars = $("#star-options .toggle-btn.active")
+          .map((_, el) => parseInt($(el).data("value"))) // 숫자로 변환
+          .get();
         table.draw();
         $("#starFilter").hide();
       });
