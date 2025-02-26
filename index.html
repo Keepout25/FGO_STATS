@@ -182,7 +182,7 @@
         var container = $("#class-options");
         container.empty();
         Array.from(classSet)
-          ..filter(value => value !== undefined && value.trim() !== "undefined") // 빈 값 제거 및 undefined 체크
+          .filter(value => value !== undefined && value.trim() !== "undefined") // 빈 값 제거 및 undefined 체크
           .sort()
           .forEach(value => {
           var btn = $(`<span class="toggle-btn" data-value="${value}">${value}</span>`)
