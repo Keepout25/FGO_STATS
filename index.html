@@ -84,7 +84,7 @@
       border-radius: 10px;
     }
 
-    .filter-popup {
+    .filter-popup .close-btn {
       position: absolute;
       top: 10px;
       right: 15px;
@@ -125,6 +125,7 @@
   </table>
 
   <div class="filter-popup" id="attributeFilter">
+    <button class="close-btn">&times;</button>
     <h3>속성 선택</h3>
     <button class="select-all">모두 선택</button>
     <button class="deselect-all">모두 해제</button>
@@ -145,30 +146,56 @@
         const response = await fetch('Data/fgo_attributes.csv');
         const csvText = await response.text();
         const results = Papa.parse(csvText, { header: true });
-        return results.data;
+
+        var fields = results.meta.fields;
+        var attributeFields = fields.filter(field => field.toLowerCase().startsWith("attribute"));
+        attributeFields.sort((a, b) => (parseInt(a.replace(/[^0-9]/g, "")) || 0) - (parseInt(b.replace(/[^0-9]/g, "")) || 0));
+
+        var attributeSet = new Set();
+        var tbodyHTML = "";
+
+         // 데이터를 테이블에 삽입
+        results.data.forEach(row => {
+          var attrValues = attributeFields.map(field => (row[field] || "").trim()).filter(val => val !== "");
+          attrValues.forEach(val => attributeSet.add(val));
+          tbodyHTML += `<tr>
+            <td>${row.star || ""}</td>
+            <td>${row.character_class || ""}</td>
+            <td>${row.character_name || ""}</td>
+            <td class="attributes">${attrValues.join(" / ")}</td>
+          </tr>`;
+        });
+        $("#servantTable tbody").html(tbodyHTML);
+        createAttributeFilters(attributeSet);
       }
 
-      let data = await loadData();
-      var tbodyHTML = "";
-      var attributeSet = new Set();
-
-      // 데이터를 테이블에 삽입
-      data.forEach(row => {
-        var attrValues = Object.values(row).filter(val => val && val.includes("attribute"));
-        attrValues.forEach(val => attributeSet.add(val));
-        tbodyHTML += `<tr>
-          <td>${row.star || ""}</td>
-          <td>${row.character_class || ""}</td>
-          <td>${row.character_name || ""}</td>
-          <td class="attributes">${attrValues.join(" / ")}</td>
-        </tr>`;
-      });
-      $("#servantTable tbody").html(tbodyHTML);
-
       // DataTables 초기화
-      table = $("#servantTable").DataTable({ paging: false, language: { search: "검색:" } });
+      table = $("#servantTable").DataTable({ paging: false, language: { search: "검색:" }
+      //, columns: [
+      //         { title: "별" },
+      //         { title: "클래스" },
+      //         { title: "서번트 이름" },
+      //         { title: "속성", orderable: false }
+      //       ]                                                                        
+     });
 
+      $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+            var attributesText = data[3]; // 속성 컬럼
+            if (selectedAttributes.length === 0) {
+              return true;
+            }
+            return selectedAttributes.every(attr => attributesText.includes(attr));
+          });
 
+      //토글 생성
+      function createAttributeFilters(attributeSet) {
+        var container = $("#filter-options");
+        container.empty();
+        Array.from(attributeSet).sort().forEach(value => {
+          container.append(`<span class="toggle-btn" data-value="${value}">${value}</span>`);
+        });
+      }
+      
       // 속성 필터 팝업 토글 기능
       $("#toggleFilter").click(function(e) {
         e.stopPropagation();  // 이벤트 전파 방지
