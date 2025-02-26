@@ -165,19 +165,23 @@
             <td class="attributes">${attrValues.join(" / ")}</td>
           </tr>`;
         });
+        
         $("#servantTable tbody").html(tbodyHTML);
+        
         createAttributeFilters(attributeSet);
       }
-
+      
       // DataTables 초기화
-      table = $("#servantTable").DataTable({ paging: false, language: { search: "검색:" }
-      //, columns: [
-      //         { title: "별" },
-      //         { title: "클래스" },
-      //         { title: "서번트 이름" },
-      //         { title: "속성", orderable: false }
-      //       ]                                                                        
-     });
+      table = $("#servantTable").DataTable({
+        paging: false,
+        language: { search: "검색:" },
+        columns: [
+          { title: "별" },
+          { title: "클래스" },
+          { title: "서번트 이름" },
+          { title: "속성", orderable: false }
+        ]
+      });
 
       $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
             var attributesText = data[3]; // 속성 컬럼
@@ -192,9 +196,12 @@
         var container = $("#filter-options");
         container.empty();
         Array.from(attributeSet).sort().forEach(value => {
-          container.append(`<span class="toggle-btn" data-value="${value}">${value}</span>`);
+          var btn = $(`<span class="toggle-btn" data-value="${value}">${value}</span>`)
+            .click(function() { $(this).toggleClass("active"); }); // ✅ 클릭 이벤트 추가
+          container.append(btn);
         });
       }
+
       
       // 속성 필터 팝업 토글 기능
       $("#toggleFilter").click(function(e) {
@@ -219,6 +226,7 @@
         $(".toggle-btn").removeClass("active");
       });
       
+      await loadData();  // 테이블 데이터 로딩 실행
     });
     
   </script>
