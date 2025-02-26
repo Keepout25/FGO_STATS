@@ -167,8 +167,9 @@
         var container = $("#star-options");
         container.empty();
         Array.from(starSet)
-          .filter(value => value && value.trim() !== "undefined") // undefined 및 빈 값 제거
-          .sort().forEach(value => {
+          .filter(value => value && (typeof value !== "string" || value.trim() !== "undefined")) // 숫자는 그대로 유지 빈 값 제거, undefined 체크
+          .sort((a, b) => a - b) // 숫자로 정렬
+          .forEach(value => {
           var btn = $(`<span class="toggle-btn" data-value="${value}">${value}성</span>`)
             .click(function() { 
               $(this).toggleClass("active"); 
@@ -181,8 +182,9 @@
         var container = $("#class-options");
         container.empty();
         Array.from(classSet)
-          .filter(value => value && value.trim() !== "undefined") // undefined 및 빈 값 제거
-          .sort().forEach(value => {
+          ..filter(value => value !== undefined && value.trim() !== "undefined") // 빈 값 제거 및 undefined 체크
+          .sort()
+          .forEach(value => {
           var btn = $(`<span class="toggle-btn" data-value="${value}">${value}</span>`)
             .click(function() { 
               $(this).toggleClass("active"); 
