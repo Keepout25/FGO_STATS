@@ -212,10 +212,13 @@
       });
 
       $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-            var attributesText = data[3]; // 속성 컬럼
+            var attributesText = data[3]; // 테이블의 속성 컬럼 데이터 (4번째 열)
+        
+            // 선택된 속성이 없으면 전체 표시
             if (selectedAttributes.length === 0) {
               return true;
             }
+            // 선택한 속성이 테이블의 속성 데이터에 포함되어 있는지 확인
             return selectedAttributes.every(attr => attributesText.includes(attr));
           });
 
@@ -225,7 +228,9 @@
         container.empty();
         Array.from(attributeSet).sort().forEach(value => {
           var btn = $(`<span class="toggle-btn" data-value="${value}">${value}</span>`)
-            .click(function() { $(this).toggleClass("active"); }); // ✅ 클릭 이벤트 추가
+            .click(function() {
+              $(this).toggleClass("active"); 
+            }); // 선택하면 'active' 클래스 추가/제거
           container.append(btn);
         });
       }
