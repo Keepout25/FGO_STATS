@@ -139,8 +139,10 @@
       function createAttributeFilters(attributeSet) {
         var container = $("#filter-options");
         container.empty();
-        Array.from(attributeSet).sort().forEach(value => {
-          var btn = $(`<span class="toggle-btn" data-value="${value}">${value}</span>`)
+        Array.from(attributeSet)
+          .filter(value => value && value.trim() !== "undefined") // undefined 및 빈 값 제거
+          .sort().forEach(value => { 
+          var btn = $(`<span class="toggle-btn" data-value="${value}">${value}</span>`) 
             .click(function() {
               $(this).toggleClass("active"); 
             }); // 선택하면 'active' 클래스 추가/제거
@@ -151,7 +153,9 @@
       function createStarFilters(starSet) {
         var container = $("#star-options");
         container.empty();
-        Array.from(starSet).sort().forEach(value => {
+        Array.from(starSet)
+          .filter(value => value && value.trim() !== "undefined") // undefined 및 빈 값 제거
+          .sort().forEach(value => {
           var btn = $(`<span class="toggle-btn" data-value="${value}">${value}성</span>`)
             .click(function() { 
               $(this).toggleClass("active"); 
@@ -163,7 +167,9 @@
       function createClassFilters(classSet) {
         var container = $("#class-options");
         container.empty();
-        Array.from(classSet).sort().forEach(value => {
+        Array.from(classSet)
+          .filter(value => value && value.trim() !== "undefined") // undefined 및 빈 값 제거
+          .sort().forEach(value => {
           var btn = $(`<span class="toggle-btn" data-value="${value}">${value}</span>`)
             .click(function() { 
               $(this).toggleClass("active"); 
