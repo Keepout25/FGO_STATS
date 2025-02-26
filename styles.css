@@ -74,7 +74,10 @@ table.dataTable {
   cursor: pointer;
   background-color: white;
 }
-
+/* ✅ 팝업이 활성화될 때 표시되도록 수정 */
+.filter-popup.active {
+  display: block !important;
+}
 .filter-popup .toggle-btn.active {
   background-color: #007bff;
   color: white;
