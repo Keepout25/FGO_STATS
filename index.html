@@ -84,14 +84,10 @@
 
          // 데이터를 테이블에 삽입
         results.data.forEach(row => {
-          var attrValues = attributeFields
-            .map(field => (row[field] || "").trim()) // undefined를 빈 문자열로 변환
-            .filter(val => val !== ""); // 빈 값 제거
-          
+          var attrValues = attributeFields.map(field => (row[field] || "").trim()).filter(val => val !== "");
           attrValues.forEach(val => attributeSet.add(val));
-          if (row.star) starSet.add(row.star); // undefined 방지
-          if (row.character_class) classSet.add(row.character_class); // undefined 방지
-          
+          starSet.add(row.star);
+          classSet.add(row.character_class);
           tbodyHTML += `<tr>
             <td>${row.star || ""}</td>
             <td>${row.character_class || ""}</td>
