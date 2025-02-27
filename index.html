@@ -108,6 +108,27 @@
         populateOptions("#class-options", classSet);
       }
 
+      $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+        var starText = parseInt(data[0]) || null;  // "별" 필터 적용
+        var classText = data[1]; // "클래스" 필터 적용
+        var attributesText = data[3]; // "속성" 필터 적용
+      
+        if (selectedStars.length > 0 && (starText === null || !selectedStars.includes(starText))) {
+          return false;
+        }
+      
+        if (selectedClasses.length > 0 && !selectedClasses.includes(classText)) {
+          return false;
+        }
+
+        if (selectedAttributes.length > 0 && !selectedAttributes.every(attr => attributesText.includes(attr))) {
+          return false;
+        }
+
+        return true;
+      });
+
+
       function populateOptions(container, dataSet, suffix = "") {
         var containerElem = $(container);
         containerElem.empty();
