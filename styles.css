@@ -48,12 +48,12 @@ table.dataTable {
   background-color: #0056b3;
 }
 
-/* 속성 필터 팝업 크기 확대 */
+/* 속성 필터 팝업 */
 .filter-popup {
   display: none;
   position: fixed;
-  width: 800px; /* 기존보다 확대 */
-  height: 600px; /* 기존보다 확대 */
+  width: 800px; 
+  height: 1200px; 
   background-color: white;
   border: 1px solid #ccc;
   padding: 15px;
