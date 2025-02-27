@@ -116,7 +116,10 @@
         var starText = parseInt(data[0]) || null;  // "별" 필터 적용
         var classText = data[1]; // "클래스" 필터 적용
         var attributesText = data[3]; // "속성" 필터 적용
-      
+
+        // selectedStars가 배열이 아닐 경우 빈 배열로 초기화
+        selectedStars = Array.isArray(selectedStars) ? selectedStars : [];
+        
         if (selectedStars.length > 0 && (starText === null || !selectedStars.includes(starText))) {
           return false;
         }
@@ -173,7 +176,7 @@
         selectedStars = $("#star-options .toggle-btn.active").map((_, el) => {
           let val = $(el).data("value");
           return val ? parseInt(val.toString().replace(/[^0-9]/g, "")) : null;  // 숫자로 변환하여 NaN 방지
-        }).filter(val => val !== null);
+        }).get().filter(val => val !== null);  // .get() 후 .filter() 실행
         selectedClasses = $("#class-options .toggle-btn.active").map((_, el) => $(el).data("value")).get();
 
         console.log("선택된 속성:", selectedAttributes);
