@@ -58,7 +58,7 @@ table.dataTable {
   max-height: 800px; /* 최대 높이 제한 */
   background-color: white;
   border: 1px solid #ccc;
-  padding: 10px;
+  padding: 15px;
   box-shadow: 0px 2px 5px rgba(0,0,0,0.3);
   z-index: 1000;
   overflow-y: auto; /* 내용이 넘칠 때만 스크롤 */
