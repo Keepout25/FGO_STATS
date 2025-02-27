@@ -48,12 +48,14 @@ table.dataTable {
   background-color: #0056b3;
 }
 
-/* 속성 필터 팝업 */
+/* 속성 필터 팝업 크기 자동 조정 */
 .filter-popup {
   display: none;
   position: fixed;
-  width: 800px; 
-  height: 1200px; 
+  width: 80vw; /* 화면 너비의 80% */
+  max-width: 1000px; /* 최대 너비 제한 */
+  height: 70vh; /* 화면 높이의 70% */
+  max-height: 800px; /* 최대 높이 제한 */
   background-color: white;
   border: 1px solid #ccc;
   padding: 15px;
