@@ -140,11 +140,13 @@
         var containerElem = $(container);
         containerElem.empty();
         Array.from(dataSet).sort().forEach(value => {
-          var btn = $(`<span class="toggle-btn" data-value="${value}">${value}${suffix}</span>`)
-            .click(function() {
-              $(this).toggleClass("active"); 
-            });
-          containerElem.append(btn);
+          if (value !== null && value !== undefined) {  // 0을 유지
+            var btn = $(`<span class="toggle-btn" data-value="${value}">${value}${suffix}</span>`)
+              .click(function() {
+                $(this).toggleClass("active"); 
+              });
+            containerElem.append(btn);
+          }
         });
       }
 
