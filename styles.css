@@ -48,20 +48,20 @@ table.dataTable {
   background-color: #0056b3;
 }
 
-/* 속성 필터 팝업 크기 자동 조정 */
+/* 속성 필터 팝업 크기 자동 조정 (높이 증가) */
 .filter-popup {
   display: none;
   position: fixed;
-  width: 80vw; /* 화면 너비의 80% */
-  max-width: 1000px; /* 최대 너비 제한 */
-  min-height: 200px; /* 최소 높이 설정 */
-  max-height: 800px; /* 최대 높이 제한 */
+  width: 80vw;
+  max-width: 1000px;
+  min-height: 200px;
+  max-height: 900px;
   background-color: white;
   border: 1px solid #ccc;
   padding: 15px;
   box-shadow: 0px 2px 5px rgba(0,0,0,0.3);
   z-index: 1000;
-  overflow-y: auto; /* 내용이 넘칠 때만 스크롤 */
+  overflow-y: auto;
   resize: both;
   left: 50%;
   top: 50%;
@@ -86,32 +86,34 @@ table.dataTable {
   color: white;
 }
 
-.filter-popup .confirm-btn {
+.filter-popup .confirm-btn, .filter-popup .select-all, .filter-popup .deselect-all {
   display: inline-block;
   margin-top: 12px;
   padding: 12px;
-  background-color: #007bff;
-  color: white;
+  font-size: 16px;
   text-align: center;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 16px;
+}
+
+/* 버튼 스타일 통일 */
+.filter-popup .confirm-btn {
+  background-color: #007bff;
+  color: white;
 }
 
 .filter-popup .select-all, .filter-popup .deselect-all {
-  display: inline-block;
-  margin-top: 12px;
-  padding: 12px;
   background-color: #28a745;
   color: white;
-  text-align: center;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 14px;
+}
+.filter-popup .select-all:hover, .filter-popup .deselect-all:hover {
+  background-color: #218838;
 }
 
 .filter-popup .deselect-all {
   background-color: #dc3545;
+}
+.filter-popup .deselect-all:hover {
+  background-color: #c82333;
 }
