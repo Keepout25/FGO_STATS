@@ -35,7 +35,8 @@ table.dataTable {
 }
 
 .filter-btn {
-  padding: 6px 12px;
+  padding: 8px 14px;
+  font-size: 16px;
   cursor: pointer;
   background-color: #007bff;
   color: white;
@@ -47,15 +48,15 @@ table.dataTable {
   background-color: #0056b3;
 }
 
-/* 속성 필터 팝업 */
+/* 속성 필터 팝업 크기 확대 */
 .filter-popup {
   display: none;
   position: fixed;
-  width: 600px;
-  height: 500px;
+  width: 800px; /* 기존보다 확대 */
+  height: 600px; /* 기존보다 확대 */
   background-color: white;
   border: 1px solid #ccc;
-  padding: 10px;
+  padding: 15px;
   box-shadow: 0px 2px 5px rgba(0,0,0,0.3);
   z-index: 1000;
   overflow-y: auto;
@@ -63,18 +64,18 @@ table.dataTable {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
+  border-radius: 10px;
 }
 
 .filter-popup .toggle-btn {
   display: inline-block;
-  padding: 5px;
-  margin: 2px;
+  padding: 6px;
+  margin: 3px;
   border: 1px solid #ccc;
   border-radius: 4px;
   cursor: pointer;
   background-color: white;
 }
-/* ✅ 팝업이 활성화될 때 표시되도록 수정 */
 .filter-popup.active {
   display: block !important;
 }
@@ -85,29 +86,30 @@ table.dataTable {
 
 .filter-popup .confirm-btn {
   display: inline-block;
-  margin-top: 10px;
-  padding: 10px;
+  margin-top: 12px;
+  padding: 12px;
   background-color: #007bff;
   color: white;
   text-align: center;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  font-size: 16px;
 }
 
 .filter-popup .select-all, .filter-popup .deselect-all {
   display: inline-block;
-  margin-top: 10px;
-  padding: 10px;
+  margin-top: 12px;
+  padding: 12px;
   background-color: #28a745;
   color: white;
   text-align: center;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  font-size: 14px;
 }
 
 .filter-popup .deselect-all {
   background-color: #dc3545;
 }
-
