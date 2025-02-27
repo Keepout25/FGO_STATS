@@ -113,9 +113,9 @@
       }
 
       $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-        var starText = parseInt(data[0]) || null;  // "별" 필터 적용
-        var classText = data[1]; // "클래스" 필터 적용
-        var attributesText = data[3]; // "속성" 필터 적용
+        var starText = !isNaN(parseInt(data[0])) ? parseInt(data[0]) : null; // 테이블의 별 컬럼 (1번째 열), 문자열을 숫자로 변환, NaN 방지
+        var classText = data[1]; // 테이블의 클래스 컬럼 (2번째 열)
+        var attributesText = data[3]; // 테이블의 속성 컬럼 (4번째 열)
 
         // selectedStars가 배열이 아닐 경우 빈 배열로 초기화
         selectedStars = Array.isArray(selectedStars) ? selectedStars : [];
