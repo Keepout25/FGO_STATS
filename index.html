@@ -100,7 +100,11 @@
         createFilters(attributeSet, starSet, classSet);
       }
 
-      await loadData();
+      try {
+      await loadData();  // 테이블 데이터 로딩 실행
+      } catch (error) {
+      console.error("데이터 로드 중 오류 발생:", error);
+      }
 
       function createFilters(attributeSet, starSet, classSet) {
         populateOptions("#filter-options", attributeSet);
