@@ -55,7 +55,7 @@ table.dataTable {
   width: 80vw; /* 화면 너비의 80% */
   max-width: 1000px; /* 최대 너비 제한 */
   height: 50vh; /* 화면 높이의 50% */
-  max-height: 800px; /* 최대 높이 제한 */
+  max-height: 500px; /* 최대 높이 제한 */
   background-color: white;
   border: 1px solid #ccc;
   padding: 15px;
