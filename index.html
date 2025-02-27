@@ -113,7 +113,9 @@
         containerElem.empty();
         Array.from(dataSet).sort().forEach(value => {
           var btn = $(`<span class="toggle-btn" data-value="${value}">${value}${suffix}</span>`)
-            .click(function() { $(this).toggleClass("active"); });
+            .click(function() {
+              $(this).toggleClass("active"); 
+            });
           containerElem.append(btn);
         });
       }
@@ -122,10 +124,37 @@
         $("#filterPopup").toggle();
       });
 
+      $(".select-all").click(function() {
+        $("#filter-options .toggle-btn").addClass("active");
+      });
+      $(".deselect-all").click(function() {
+        $("#filter-options .toggle-btn").removeClass("active");
+      });
+      $(".select-all-star").click(function() {
+        $("#star-options .toggle-btn").addClass("active");
+      });
+      $(".deselect-all-star").click(function() {
+        $("#star-options .toggle-btn").removeClass("active");
+      });
+      $(".select-all-class").click(function() {
+        $("#class-options .toggle-btn").addClass("active");
+      });
+      $(".deselect-all-class").click(function() {
+        $("#class-options .toggle-btn").removeClass("active");
+      });
+
       $("#confirmFilter").click(function() {
         selectedAttributes = $("#filter-options .toggle-btn.active").map((_, el) => $(el).data("value")).get();
-        selectedStars = $("#star-options .toggle-btn.active").map((_, el) => $(el).data("value")).get();
+        selectedStars = $("#star-options .toggle-btn.active").map((_, el) => {
+          let val = $(el).data("value");
+          return val ? parseInt(val.toString().replace(/[^0-9]/g, "")) : null;  // 숫자로 변환하여 NaN 방지
+        }).filter(val => val !== null);
         selectedClasses = $("#class-options .toggle-btn.active").map((_, el) => $(el).data("value")).get();
+
+        console.log("선택된 속성:", selectedAttributes);
+        console.log("선택된 별:", selectedStars);
+        console.log("선택된 클래스:", selectedClasses);
+
         table.draw();
         $("#filterPopup").hide();
       });
