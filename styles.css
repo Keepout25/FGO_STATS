@@ -86,7 +86,7 @@ table.dataTable {
   color: white;
 }
 
-.filter-popup .confirm-btn, .filter-popup .select-all, .filter-popup .deselect-all {
+.filter-popup .confirm-btn, .filter-popup .select-all, .filter-popup .deselect-all, .filter-popup .select-all-star, .filter-popup .deselect-all-star, .filter-popup .select-all-class, .filter-popup .deselect-all-class {
   display: inline-block;
   margin-top: 12px;
   padding: 12px;
@@ -103,17 +103,17 @@ table.dataTable {
   color: white;
 }
 
-.filter-popup .select-all, .filter-popup .deselect-all {
+.filter-popup .select-all, .filter-popup .deselect-all, .filter-popup .select-all-star, .filter-popup .deselect-all-star, .filter-popup .select-all-class, .filter-popup .deselect-all-class {
   background-color: #28a745;
   color: white;
 }
-.filter-popup .select-all:hover, .filter-popup .deselect-all:hover {
+.filter-popup .select-all:hover, .filter-popup .deselect-all:hover, .filter-popup .select-all-star:hover, .filter-popup .deselect-all-star:hover, .filter-popup .select-all-class:hover, .filter-popup .deselect-all-class:hover {
   background-color: #218838;
 }
 
-.filter-popup .deselect-all {
+.filter-popup .deselect-all, .filter-popup .deselect-all-star,  .filter-popup .deselect-all-class {
   background-color: #dc3545;
 }
-.filter-popup .deselect-all:hover {
+.filter-popup .deselect-all:hover, .filter-popup .deselect-all-star:hover, .filter-popup .deselect-all-class:hover {
   background-color: #c82333;
 }
