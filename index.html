@@ -177,10 +177,10 @@
         selectedAttributes = $("#filter-options .toggle-btn.active").map((_, el) => $(el).data("value")).get();
         selectedStars = $("#star-options .toggle-btn.active").map((_, el) => {
           let val = $(el).data("value");
-          return val ? parseInt(val.toString().replace(/[^0-9]/g, "")) : null;  // 숫자로 변환하여 NaN 방지
+          return val !== null && val !== undefined ? parseInt(val.toString().replace(/[^0-9]/g, "")) : null;  // 숫자로 변환하여 NaN 방지
         }).get().filter(val => val !== null);  // .get() 후 .filter() 실행
+        
         selectedClasses = $("#class-options .toggle-btn.active").map((_, el) => $(el).data("value")).get();
-
         console.log("선택된 속성:", selectedAttributes);
         console.log("선택된 별:", selectedStars);
         console.log("선택된 클래스:", selectedClasses);
